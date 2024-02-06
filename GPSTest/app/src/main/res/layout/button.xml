@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/linearLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#46858E"
+    android:gravity="right" >
+
+    <TextView
+        android:id="@+id/textView4"
+        android:layout_width="124dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="92dp"
+        android:text="TextView"
+        app:layout_constraintStart_toStartOf="@+id/latText3"
+        tools:layout_editor_absoluteY="160dp" />
+
+    <EditText
+        android:id="@+id/latText3"
+        android:layout_width="81dp"
+        android:layout_height="44dp"
+        android:layout_marginTop="160dp"
+        android:layout_marginEnd="140dp"
+        android:ems="10"
+        android:inputType="textPersonName"
+        android:text="TTFF"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_width="120dp"
+        android:layout_height="51dp"
+        android:layout_marginStart="88dp"
+        android:text="TextView"
+        app:layout_constraintStart_toStartOf="@+id/latText2"
+        tools:layout_editor_absoluteY="88dp" />
+
+    <EditText
+        android:id="@+id/latText2"
+        android:layout_width="77dp"
+        android:layout_height="49dp"
+        android:layout_marginTop="88dp"
+        android:layout_marginEnd="140dp"
+        android:ems="10"
+        android:inputType="textPersonName"
+        android:text="Long"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/button"
+        android:layout_width="134dp"
+        android:layout_height="49dp"
+        android:layout_marginTop="16dp"
+        android:text="Button"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:layout_editor_absoluteX="36dp" />
+
+    <Button
+        android:id="@+id/button2"
+        android:layout_width="131dp"
+        android:layout_height="43dp"
+        android:layout_marginTop="156dp"
+        android:text="Button"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:layout_editor_absoluteX="38dp" />
+
+    <Button
+        android:id="@+id/button4"
+        android:layout_width="135dp"
+        android:layout_height="49dp"
+        android:text="Button"
+        tools:layout_editor_absoluteX="38dp"
+        tools:layout_editor_absoluteY="88dp" />
+
+    <EditText
+        android:id="@+id/latText"
+        android:layout_width="76dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="140dp"
+        android:ems="10"
+        android:inputType="textPersonName"
+        android:text="Lat"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="120dp"
+        android:layout_height="51dp"
+        android:layout_marginStart="12dp"
+        android:text="TextView"
+        app:layout_constraintStart_toEndOf="@+id/latText"
+        tools:layout_editor_absoluteY="14dp" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
