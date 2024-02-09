@@ -1,24 +1,91 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    tools:context=".MainActivity"
-    >
+    android:layout_height="match_parent">
 
-    <include layout="@layout/button" />
 
-    <include
-        layout="@layout/output1"
+    <LinearLayout
+        android:id="@+id/firstLayer"
         android:layout_width="match_parent"
-        android:layout_height="200dp" />
-    <include
-        layout="@layout/output2"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_alignParentTop="true"
+        android:layout_margin="16dp">
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
 
+            <ToggleButton
+                android:id="@+id/toggleBtnStartGPS"
+                android:layout_width="114dp"
+                android:layout_height="wrap_content"
+                android:checked="false"
+                android:textOff="Start GPS"
+                android:textOn="Stop GPS"
+                />
 
+            <Button
+                android:id="@+id/btnClearGPS"
+                android:layout_width="114dp"
+                android:layout_height="wrap_content"
+                android:text="Clear GPS"
+                />
 
-</LinearLayout>
+            <Button
+                android:id="@+id/btnStartTTFF"
+                android:layout_width="114dp"
+                android:layout_height="wrap_content"
+                android:text="Start TTFF" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvLatitude"
+                android:layout_width="match_parent"
+                android:layout_height="41dp"
+                android:text="Latitude: "
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvLongitude"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Longitude: "
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_marginTop="16dp"/>
+
+            <TextView
+                android:id="@+id/tvTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Time: "
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_marginTop="16dp"/>
+
+            <TextView
+                android:id="@+id/tvTTFF"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="TTFF: "
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_marginTop="16dp"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    
+
+</RelativeLayout>
