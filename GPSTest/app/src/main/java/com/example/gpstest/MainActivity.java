@@ -26,25 +26,41 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+
 public class MainActivity extends AppCompatActivity {
 
     private static final int REQUEST_LOCATION_PERMISSION = 1001;
 
     private LocationManager locationManager;
     private LocationListener locationListener;
+    private long startTime;
+    private List<Long> ttffList;
+    private int coldStartCount;
+
+
+
 
     private ToggleButton startGPSButton;
     private Button clearGPSButton, startTTFFButton;
-    private TextView latTextview, longTextview,ttffTextview;
-    private TextView altTextview,ehvTextview,
-            altMslTextview,satsTextview,
-            speedTextview,bearingTextview,sAccTextview,
-            bAccTextview,pDopTextview,hvDopTextview;
+    private TextView latTextview, longTextview, ttffTextview,timeTextview;
+    private TextView altTextview, ehvTextview,
+            altMslTextview, satsTextview,
+            speedTextview, bearingTextview, sAccTextview,
+            bAccTextview, pDopTextview, hvDopTextview;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+
+        ttffList = new ArrayList<>();
+        coldStartCount = 0;
 
         //In First layout
         clearGPSButton = findViewById(R.id.clearGPSButton);
@@ -53,6 +69,7 @@ public class MainActivity extends AppCompatActivity {
         latTextview = findViewById(R.id.latTextview);
         longTextview = findViewById(R.id.longTextview);
         ttffTextview = findViewById(R.id.ttffTextview);
+        timeTextview = findViewById(R.id.timeTextview);
 
         //In second Layout
         altTextview = findViewById(R.id.altTextview);
@@ -67,20 +84,54 @@ public class MainActivity extends AppCompatActivity {
         hvDopTextview = findViewById(R.id.hvDopTextview);
 
 
+
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
         // Initialize location listener
         locationListener = new LocationListener() {
             @Override
             public void onLocationChanged(Location location) {
-                updateLocation(location);
+               // updateLocation(location);
+                double latitude = location.getLatitude();
+                double longitude = location.getLongitude();
+                double altitude = location.getAltitude();
+
+
+
+                latTextview.setText("Latitude: " + latitude);
+                Log.d("TTFF", "Latitude " + latitude);
+
+
+                longTextview.setText("Longitude: " + longitude);
+                Log.d("TTFF", "Longitude: " + longitude);
+
+
+                altTextview.setText(""+altitude);
+                Log.d("TTFF", "altitude" + altitude);
+
+                // Calculate TTFF
+                long currentTime = System.currentTimeMillis();
+                long ttff = (currentTime - startTime)/1000;
+                String ttffval = String.valueOf(ttff);
+
+                ttffTextview.setText("TTFF:"+ttffval+"s");
+
+                Log.d("TTFF", "Time to First Fix (TTFF): " + ttffval + " seconds");
+                // Continue listening for location updates
+                startTime = currentTime;
+
+                // Once we receive a location update, we can stop listening for further updates
+              locationManager.removeUpdates(this);
+
             }
 
             @Override
-            public void onStatusChanged(String provider, int status, Bundle extras) {}
+            public void onStatusChanged(String provider, int status, Bundle extras) {
+            }
 
             @Override
-            public void onProviderEnabled(String provider) {}
+            public void onProviderEnabled(String provider) {
+            }
 
             @Override
             public void onProviderDisabled(String provider) {
@@ -99,7 +150,34 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+        // Update time every second
+        Thread thread = new Thread() {
+            @Override
+            public void run() {
+                try {
+                    while (!isInterrupted()) {
+                        Thread.sleep(1000);
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                updateTime();
+                            }
+                        });
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        };
+        thread.start();
+
+}
+    private void updateTime() {
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
+        String currentTime = sdf.format(new Date());
+        timeTextview.setText("Time: " + currentTime);
     }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
@@ -127,6 +205,7 @@ public class MainActivity extends AppCompatActivity {
                 // If GPS is not enabled, prompt user to enable it
                 showLocationSettingsDialog();
             } else {
+                startTime = System.currentTimeMillis(); // Record the start time
                 locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
                         1000, 0, locationListener);
                 Toast.makeText(MainActivity.this,
@@ -145,15 +224,19 @@ public class MainActivity extends AppCompatActivity {
         Toast.makeText(MainActivity.this, "GPS Stopped", Toast.LENGTH_SHORT).show();
     }
 
-    private void updateLocation(Location location) {
+   /* private void updateLocation(Location location) {
         if (location != null) {
             double latitude = location.getLatitude();
             double longitude = location.getLongitude();
+            double altitude = location.getAltitude();
+
+
 
             latTextview.setText("Latitude: " + latitude);
             longTextview.setText("Longitude: " + longitude);
+            altTextview.setText(""+altitude);
         }
-    }
+    }*/
 
     private void showLocationSettingsDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
@@ -169,6 +252,7 @@ public class MainActivity extends AppCompatActivity {
                         dialog.cancel();
                     }
                 });
+
         AlertDialog alert = builder.create();
         alert.show();
     }
