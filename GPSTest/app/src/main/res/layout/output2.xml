@@ -2,17 +2,54 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:background="#EBF8F7"
     >
-    <TextView
-        android:layout_width="wrap_content"
+    <TableLayout
+        android:id="@+id/satelliteTable"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Display content 2"
-        android:textSize="20dp"
-        android:gravity="center"
-        android:textAlignment="center"
-        android:textColor="@color/black"
-        />
+        android:stretchColumns="*">
+
+        <TableRow>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="ID"
+                android:textStyle="bold"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="GNSS"
+                android:textStyle="bold"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="CF"
+                android:textStyle="bold"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="C/No"
+                android:textStyle="bold"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Flags"
+                android:textStyle="bold"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Elev"
+                android:textStyle="bold"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Azim"
+                android:textStyle="bold"/>
+        </TableRow>
+
+    </TableLayout>
+
+
 
 </ScrollView>
