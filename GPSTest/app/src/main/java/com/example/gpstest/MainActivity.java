@@ -11,7 +11,12 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
@@ -28,17 +33,39 @@ public class MainActivity extends AppCompatActivity {
     private LocationManager locationManager;
     private LocationListener locationListener;
 
-    private ToggleButton toggleBtnStartGPS;
-    private TextView tvLatitude, tvLongitude;
+    private ToggleButton startGPSButton;
+    private Button clearGPSButton, startTTFFButton;
+    private TextView latTextview, longTextview,ttffTextview;
+    private TextView altTextview,ehvTextview,
+            altMslTextview,satsTextview,
+            speedTextview,bearingTextview,sAccTextview,
+            bAccTextview,pDopTextview,hvDopTextview;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        toggleBtnStartGPS = findViewById(R.id.toggleBtnStartGPS);
-        tvLatitude = findViewById(R.id.tvLatitude);
-        tvLongitude = findViewById(R.id.tvLongitude);
+        //In First layout
+        clearGPSButton = findViewById(R.id.clearGPSButton);
+        startTTFFButton = findViewById(R.id.startTTFFButton);
+        startGPSButton = findViewById(R.id.startGpsButton);
+        latTextview = findViewById(R.id.latTextview);
+        longTextview = findViewById(R.id.longTextview);
+        ttffTextview = findViewById(R.id.ttffTextview);
+
+        //In second Layout
+        altTextview = findViewById(R.id.altTextview);
+        ehvTextview = findViewById(R.id.ehvTextview);
+        altMslTextview = findViewById(R.id.altMslTextview);
+        satsTextview = findViewById(R.id.satsTextview);
+        speedTextview = findViewById(R.id.speedTextview);
+        bearingTextview = findViewById(R.id.bearingTextview);
+        sAccTextview = findViewById(R.id.sAccTextview);
+        bAccTextview = findViewById(R.id.bAccTextview);
+        pDopTextview = findViewById(R.id.pDopTextview);
+        hvDopTextview = findViewById(R.id.hvDopTextview);
+
 
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
@@ -62,10 +89,10 @@ public class MainActivity extends AppCompatActivity {
             }
         };
 
-        toggleBtnStartGPS.setOnClickListener(new View.OnClickListener() {
+        startGPSButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (toggleBtnStartGPS.isChecked()) {
+                if (startGPSButton.isChecked()) {
                     startLocationUpdates();
                 } else {
                     stopLocationUpdates();
@@ -73,6 +100,26 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu,menu);
+        Log.d("OnCreateOptionsMenu","Menu options Created");
+        return true;
+    }
+    @Override
+    public boolean onOptionsItemSelected( MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.settings:
+               Log.d("Menu","Settings!");
+               Toast.makeText(this, "Settings!", Toast.LENGTH_LONG).show();
+
+
+                break;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
 
     private void startLocationUpdates() {
         if (checkLocationPermission()) {
@@ -80,8 +127,10 @@ public class MainActivity extends AppCompatActivity {
                 // If GPS is not enabled, prompt user to enable it
                 showLocationSettingsDialog();
             } else {
-                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0, locationListener);
-                Toast.makeText(MainActivity.this, "GPS Started", Toast.LENGTH_SHORT).show();
+                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+                        1000, 0, locationListener);
+                Toast.makeText(MainActivity.this,
+                        "GPS Started", Toast.LENGTH_SHORT).show();
             }
         } else {
             // Request location permission
@@ -101,8 +150,8 @@ public class MainActivity extends AppCompatActivity {
             double latitude = location.getLatitude();
             double longitude = location.getLongitude();
 
-            tvLatitude.setText("Latitude: " + latitude);
-            tvLongitude.setText("Longitude: " + longitude);
+            latTextview.setText("Latitude: " + latitude);
+            longTextview.setText("Longitude: " + longitude);
         }
     }
 
@@ -125,17 +174,26 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private boolean checkLocationPermission() {
-        return ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+
+        Log.d("Location","Checking Location permissions");
+        return ActivityCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == REQUEST_LOCATION_PERMISSION) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            if (grantResults.length > 0
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Log.d("Location","Allow location permissions");
+
                 startLocationUpdates();
             } else {
-                Toast.makeText(this, "Location permission denied", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this,
+                        "Location permission denied", Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -143,6 +201,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        Log.d("Location","Location updates Stopped!");
         stopLocationUpdates();
     }
 }

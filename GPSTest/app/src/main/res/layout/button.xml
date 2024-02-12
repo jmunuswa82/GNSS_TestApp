@@ -1,16 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="#EFF3F2">
 
 
     <LinearLayout
-        android:id="@+id/firstLayer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:layout_alignParentTop="true"
-        android:layout_margin="16dp">
+        android:layout_margin="16dp"
+        android:baselineAligned="false">
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -18,26 +19,35 @@
             android:orientation="vertical">
 
             <ToggleButton
-                android:id="@+id/toggleBtnStartGPS"
-                android:layout_width="114dp"
+                android:id="@+id/startGpsButton"
+                android:layout_width="140dp"
                 android:layout_height="wrap_content"
                 android:checked="false"
+                android:layout_margin="10dp"
+                android:background="#FF325933"
+                android:textColor="@color/white"
                 android:textOff="Start GPS"
                 android:textOn="Stop GPS"
                 />
 
             <Button
-                android:id="@+id/btnClearGPS"
-                android:layout_width="114dp"
+                android:id="@+id/clearGPSButton"
+                android:layout_width="140dp"
                 android:layout_height="wrap_content"
                 android:text="Clear GPS"
-                android:textColor="@color/black"/>
+                android:layout_margin="10dp"
+                android:background="#FF325933"
+                android:textColor="@color/white"
+               />
 
             <Button
-                android:id="@+id/btnStartTTFF"
-                android:layout_width="114dp"
+                android:id="@+id/startTTFFButton"
+                android:layout_width="140dp"
                 android:layout_height="wrap_content"
-                android:text="Start TTFF" />
+                android:text="Start TTFF"
+                android:layout_margin="10dp"
+                android:background="#FF325933"
+                android:textColor="@color/white"/>
 
         </LinearLayout>
 
@@ -48,39 +58,43 @@
             android:orientation="vertical">
 
             <TextView
-                android:id="@+id/tvLatitude"
+                android:id="@+id/latTextview"
                 android:layout_width="match_parent"
                 android:layout_height="41dp"
                 android:text="Latitude: "
+                android:textColor="@color/black"
                 android:textSize="16sp"
                 android:textStyle="bold" />
 
             <TextView
-                android:id="@+id/tvLongitude"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:id="@+id/longTextview"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:layout_marginTop="16dp"
                 android:text="Longitude: "
+                android:textColor="@color/black"
                 android:textSize="16sp"
-                android:textStyle="bold"
-                android:layout_marginTop="16dp"/>
+                android:textStyle="bold" />
 
             <TextView
-                android:id="@+id/tvTime"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:id="@+id/timeTextview"
+                android:layout_width="match_parent"
+                android:layout_height="38dp"
+                android:layout_marginTop="16dp"
                 android:text="Time: "
+                android:textColor="@color/black"
                 android:textSize="16sp"
-                android:textStyle="bold"
-                android:layout_marginTop="16dp"/>
+                android:textStyle="bold" />
 
             <TextView
-                android:id="@+id/tvTTFF"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:id="@+id/ttffTextview"
+                android:layout_width="match_parent"
+                android:layout_height="32dp"
+                android:layout_marginTop="16dp"
                 android:text="TTFF: "
+                android:textColor="@color/black"
                 android:textSize="16sp"
-                android:textStyle="bold"
-                android:layout_marginTop="16dp"/>
+                android:textStyle="bold" />
 
         </LinearLayout>
 

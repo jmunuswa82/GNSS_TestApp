@@ -8,255 +8,186 @@
         android:layout_width="match_parent"
         android:rowCount="7"
         android:columnCount="4"
-    android:background="#C5F4F1">
-    <TextView
-        android:id="@+id/tv1"
-        android:text="Lat:"
-        android:textStyle="bold"
-        android:textSize="20sp"
-        android:layout_column="0"
-        android:layout_row="0"
-       />
-    <TextView android:id="@+id/tr1"
-        android:layout_width="100dp"
-        android:layout_height="wrap_content"
-        android:text="0.00"
-        android:textStyle="bold"
-        android:layout_row="0"
-        android:layout_column="1"
-
-        />
+        android:background="#ECF6F5"
+    >
 
     <TextView
-        android:id="@+id/tv2"
-        android:text="Time:"
-        android:textStyle="bold"
-        android:textSize="20sp"
-        android:layout_column="2"
-        android:layout_row="0"
-     />
-    <TextView android:id="@+id/tr2"
-        android:layout_width="100dp"
-        android:layout_height="wrap_content"
-        android:text="0.00"
-        android:textStyle="bold"
-        android:layout_row="0"
-        android:layout_column="3"
-
-        />
-
-    <TextView
-        android:id="@+id/tv3"
-        android:text="Long:"
-        android:textStyle="bold"
-        android:textSize="20sp"
-        android:layout_column="0"
-        android:layout_row="1"
-       />
-    <TextView android:id="@+id/tr3"
-        android:layout_width="100dp"
-        android:layout_height="wrap_content"
-        android:text="0.00"
-        android:textStyle="bold"
-        android:layout_row="1"
-        android:layout_column="1"
-
-        />
-
-    <TextView
-        android:id="@+id/tv4"
-        android:text="TTFF:"
-        android:textStyle="bold"
-        android:textSize="20sp"
-        android:layout_column="2"
-        android:layout_row="1"
-       />
-    <TextView android:id="@+id/tr4"
-        android:layout_width="100dp"
-        android:layout_height="wrap_content"
-        android:text="0.00"
-        android:textStyle="bold"
-        android:layout_row="1"
-        android:layout_column="3"
-
-        />
-
-    <TextView
-        android:id="@+id/tv5"
         android:text="Alt:"
         android:textStyle="bold"
         android:textSize="20sp"
+        android:textColor="@color/black"
         android:layout_column="0"
-        android:layout_row="2"
+        android:layout_row="0"
      />
-    <TextView android:id="@+id/tr5"
+    <TextView
+        android:id="@+id/altTextview"
         android:layout_width="100dp"
         android:layout_height="wrap_content"
         android:text="0.00"
         android:textStyle="bold"
-        android:layout_row="2"
+        android:layout_row="0"
         android:layout_column="1"
 
         />
 
     <TextView
-        android:id="@+id/tv6"
         android:text="E H/V Acc:"
         android:textStyle="bold"
+        android:textColor="@color/black"
         android:textSize="20sp"
         android:layout_column="2"
-        android:layout_row="2"
+        android:layout_row="0"
        />
-    <TextView android:id="@+id/tr6"
+    <TextView android:id="@+id/ehvTextview"
         android:layout_width="100dp"
         android:layout_height="wrap_content"
         android:text="0.00"
         android:textStyle="bold"
-        android:layout_row="2"
+        android:layout_row="0"
         android:layout_column="3"
 
         />
 
     <TextView
-        android:id="@+id/tv7"
         android:text="Alt (MSL):"
         android:textStyle="bold"
         android:textSize="20sp"
+        android:textColor="@color/black"
         android:layout_column="0"
-        android:layout_row="3"
+        android:layout_row="1"
   />
-    <TextView android:id="@+id/tr7"
+    <TextView android:id="@+id/altMslTextview"
         android:layout_width="100dp"
         android:textStyle="bold"
         android:layout_height="wrap_content"
         android:text="0.00"
-        android:layout_row="3"
+        android:layout_row="1"
         android:layout_column="1"
 
         />
 
     <TextView
-        android:id="@+id/tv8"
         android:text="#Sats:"
         android:textStyle="bold"
         android:textSize="20sp"
+        android:textColor="@color/black"
         android:layout_column="2"
-        android:layout_row="3"
+        android:layout_row="1"
       />
-    <TextView android:id="@+id/tr8"
+    <TextView android:id="@+id/satsTextview"
         android:layout_width="100dp"
         android:textStyle="bold"
         android:layout_height="wrap_content"
-        android:text="0.00"
-        android:layout_row="3"
+        android:text="0/0/0"
+        android:layout_row="1"
         android:layout_column="3"
 
         />
 
     <TextView
-        android:id="@+id/tv9"
         android:text="Speed:"
         android:textStyle="bold"
+        android:textColor="@color/black"
         android:textSize="20sp"
         android:layout_column="0"
-        android:layout_row="4"
+        android:layout_row="2"
     />
-    <TextView android:id="@+id/tr9"
+    <TextView android:id="@+id/speedTextview"
         android:layout_width="100dp"
         android:layout_height="wrap_content"
         android:text="0.00"
-        android:layout_row="4"
+        android:layout_row="2"
         android:textStyle="bold"
         android:layout_column="1"
 
         />
 
     <TextView
-        android:id="@+id/tv10"
         android:text="Bearing:"
+        android:textColor="@color/black"
         android:textStyle="bold"
         android:textSize="20sp"
         android:layout_column="2"
-        android:layout_row="4"
+        android:layout_row="2"
        />
-    <TextView android:id="@+id/tr10"
+    <TextView android:id="@+id/bearingTextview"
         android:layout_width="100dp"
         android:layout_height="wrap_content"
         android:text="0.00"
         android:textStyle="bold"
-        android:layout_row="4"
+        android:layout_row="2"
         android:layout_column="3"
    />
 
     <TextView
-        android:id="@+id/tv11"
         android:text="S.Acc:"
         android:textStyle="bold"
+        android:textColor="@color/black"
         android:textSize="20sp"
         android:layout_column="0"
-        android:layout_row="5"
+        android:layout_row="3"
   />
-    <TextView android:id="@+id/tr11"
+    <TextView android:id="@+id/sAccTextview"
         android:layout_width="100dp"
         android:layout_height="wrap_content"
         android:text="0.00"
         android:textStyle="bold"
-        android:layout_row="5"
+        android:layout_row="3"
         android:layout_column="1"
 
         />
 
     <TextView
-        android:id="@+id/tv12"
         android:text="B.Acc:"
         android:textStyle="bold"
         android:textSize="20sp"
+        android:textColor="@color/black"
         android:layout_column="2"
-        android:layout_row="5"
+        android:layout_row="3"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tv1"/>
-    <TextView android:id="@+id/tr12"
+    <TextView android:id="@+id/bAccTextview"
         android:layout_width="100dp"
         android:textStyle="bold"
         android:layout_height="wrap_content"
         android:text="0.00"
-        android:layout_row="5"
+        android:layout_row="3"
         android:layout_column="3"
 
         />
 
     <TextView
-        android:id="@+id/tv13"
         android:text="PDOP:"
         android:textStyle="bold"
         android:textSize="20sp"
+        android:textColor="@color/black"
         android:layout_column="0"
-        android:layout_row="6"
+        android:layout_row="4"
        />
-    <TextView android:id="@+id/tr13"
+    <TextView android:id="@+id/pDopTextview"
         android:layout_width="100dp"
         android:layout_height="wrap_content"
         android:text="0.00"
         android:textStyle="bold"
-        android:layout_row="6"
+        android:layout_row="4"
         android:layout_column="1"
 
         />
 
     <TextView
-        android:id="@+id/tv14"
         android:text="H/V DOP:"
         android:textStyle="bold"
+        android:textColor="@color/black"
         android:textSize="20sp"
         android:layout_column="2"
-        android:layout_row="6"
+        android:layout_row="4"
     />
-    <TextView android:id="@+id/tr14"
+    <TextView android:id="@+id/hvDopTextview"
         android:layout_width="100dp"
         android:layout_height="wrap_content"
         android:text="0.00"
         android:textStyle="bold"
-        android:layout_row="6"
+        android:layout_row="4"
         android:layout_column="3"
 
         />
