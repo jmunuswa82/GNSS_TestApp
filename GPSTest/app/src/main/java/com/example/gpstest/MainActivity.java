@@ -51,7 +51,6 @@ public class MainActivity extends AppCompatActivity {
     private ToggleButton startGPSButton;
     private Button clearGPSButton, startTTFFButton;
     private TextView latTextview, longTextview, ttffTextview,timeTextview;
-    private TextView latTextview, longTextview, ttffTextview;
     private TextView altTextview, ehvTextview,
             altMslTextview, satsTextview,
             speedTextview, bearingTextview, sAccTextview,
@@ -184,6 +183,32 @@ public class MainActivity extends AppCompatActivity {
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
         String currentTime = sdf.format(new Date());
         timeTextview.setText("Time: " + currentTime);
+    }
+
+
+        //3rd layer
+        satelliteTable = findViewById(R.id.satelliteTable);
+
+        // Initialize GNSS status callback
+        gnssStatusCallback = new GnssStatus.Callback() {
+            @Override
+            public void onSatelliteStatusChanged(GnssStatus status) {
+                gnssStatus = status;
+                updateSatelliteInfo();
+            }
+        };
+
+
+
+        //request GNSS update
+        if (checkLocationPermission()) {
+            locationManager.registerGnssStatusCallback(gnssStatusCallback);
+        } else {
+            //request location permission
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    REQUEST_LOCATION_PERMISSION);
+        }
     }
 
 
