@@ -213,10 +213,8 @@ public class MainActivity extends AppCompatActivity {
         for (int i = 0; i < satelliteCount; i++) {
             // Retrieve satellite information
             int prn = gnssStatus.getSvid(i);
-            String gnss = getGnssName(gnssStatus.getConstellationType(i));
-            float cf = gnssStatus.getCarrierFrequencyHz(i);
+            int constellationType = gnssStatus.getConstellationType(i);
             float cn0 = gnssStatus.getCn0DbHz(i);
-            int flags = gnssStatus.getFlags(i);
             float elevation = gnssStatus.getElevationDegrees(i);
             float azimuth = gnssStatus.getAzimuthDegrees(i);
 
@@ -229,27 +227,27 @@ public class MainActivity extends AppCompatActivity {
             satelliteRow.addView(idTextView);
 
             TextView gnssTextView = new TextView(this);
-            gnssTextView.setText(gnss);
+            gnssTextView.setText(getConstellationType(constellationType));
             satelliteRow.addView(gnssTextView);
 
             TextView cfTextView = new TextView(this);
-            cfTextView.setText(String.valueOf(cf));
+            cfTextView.setText("CF Data");
             satelliteRow.addView(cfTextView);
 
             TextView cnoTextView = new TextView(this);
-            cnoTextView.setText(String.valueOf(cn0));
+            cnoTextView.setText(cn0 > 0 ? String.valueOf(cn0) : ""); // Display C/No if available
             satelliteRow.addView(cnoTextView);
 
             TextView flagsTextView = new TextView(this);
-            flagsTextView.setText(getFlags(flags));
+            flagsTextView.setText("Flags Data"); // Placeholder for Flags data
             satelliteRow.addView(flagsTextView);
 
             TextView elevTextView = new TextView(this);
-            elevTextView.setText(String.valueOf(elevation));
+            elevTextView.setText(elevation > 0 ? String.valueOf(elevation) : ""); // Display elevation if available
             satelliteRow.addView(elevTextView);
 
             TextView azimTextView = new TextView(this);
-            azimTextView.setText(String.valueOf(azimuth));
+            azimTextView.setText(azimuth > 0 ? String.valueOf(azimuth) : ""); // Display azimuth if available
             satelliteRow.addView(azimTextView);
 
             // Add TableRow to TableLayout
@@ -257,7 +255,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private String getGnssName(int constellationType){
+    private String getConstellationType(int constellationType){
         switch (constellationType){
             case GnssStatus.CONSTELLATION_GPS:
                 return "GPS";
@@ -271,16 +269,6 @@ public class MainActivity extends AppCompatActivity {
                 return "IRNSS";
             default:
                 return "UNKNOWN";
-        }
-    }
-
-    private String getFlags(int flags){
-        if ((flags & GnssStatus.GNSS_SV_FLAGS_HAS_EPHEMERIS_DATA) != 0) {
-            return "A";
-        } else if ((flags & GnssStatus.GNSS_SV_FLAGS_USED_IN_FIX) != 0) {
-            return "AU";
-        } else {
-            return "AE";
         }
     }
 
