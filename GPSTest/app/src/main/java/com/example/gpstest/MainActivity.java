@@ -18,11 +18,10 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TableLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
-import android.widget.TableLayout;
-import android.widget.TableRow;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -89,6 +88,9 @@ public class MainActivity extends AppCompatActivity {
         bAccTextview = findViewById(R.id.bAccTextview);
         pDopTextview = findViewById(R.id.pDopTextview);
         hvDopTextview = findViewById(R.id.hvDopTextview);
+
+        satelliteTable = findViewById(R.id.satelliteTable);
+        satelliteTable = findViewById(R.id.satelliteTable);
 
 
 
@@ -178,123 +180,14 @@ public class MainActivity extends AppCompatActivity {
         };
         thread.start();
 
+
 }
+
     private void updateTime() {
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
         String currentTime = sdf.format(new Date());
         timeTextview.setText("Time: " + currentTime);
     }
-
-
-        //3rd layer
-        satelliteTable = findViewById(R.id.satelliteTable);
-
-        // Initialize GNSS status callback
-        gnssStatusCallback = new GnssStatus.Callback() {
-            @Override
-            public void onSatelliteStatusChanged(GnssStatus status) {
-                gnssStatus = status;
-                updateSatelliteInfo();
-            }
-        };
-
-
-
-        //request GNSS update
-        if (checkLocationPermission()) {
-            locationManager.registerGnssStatusCallback(gnssStatusCallback);
-        } else {
-            //request location permission
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                    REQUEST_LOCATION_PERMISSION);
-        }
-    }
-
-
-        //3rd layer
-        satelliteTable = findViewById(R.id.satelliteTable);
-
-        // Initialize GNSS status callback
-        gnssStatusCallback = new GnssStatus.Callback() {
-            @Override
-            public void onSatelliteStatusChanged(GnssStatus status) {
-                gnssStatus = status;
-                updateSatelliteInfo();
-            }
-        };
-
-
-
-        //request GNSS update
-        if (checkLocationPermission()) {
-            locationManager.registerGnssStatusCallback(gnssStatusCallback);
-        } else {
-            //request location permission
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                    REQUEST_LOCATION_PERMISSION);
-        }
-    }
-
-    private void updateSatelliteInfo() {
-        // Clear previous satellite information
-        satelliteTable.removeViews(1, satelliteTable.getChildCount() - 1);
-
-        // Iterate through each satellite
-        int satelliteCount = gnssStatus.getSatelliteCount();
-        for (int i = 0; i < satelliteCount; i++) {
-            // Retrieve satellite information
-            int prn = gnssStatus.getSvid(i);
-            float cn0 = gnssStatus.getCn0DbHz(i);
-            float elevation = gnssStatus.getElevationDegrees(i);
-            float azimuth = gnssStatus.getAzimuthDegrees(i);
-
-            // Create a new TableRow to hold satellite data
-            TableRow satelliteRow = new TableRow(this);
-
-            // Create TextViews for satellite data
-            TextView idTextView = new TextView(this);
-            idTextView.setText(String.valueOf(prn));
-            satelliteRow.addView(idTextView);
-
-            TextView gnssTextView = new TextView(this);
-            gnssTextView.setText("GNSS Data");
-            satelliteRow.addView(gnssTextView);
-
-            TextView cfTextView = new TextView(this);
-            cfTextView.setText("CF Data");
-            satelliteRow.addView(cfTextView);
-
-            TextView cnoTextView = new TextView(this);
-            cnoTextView.setText(String.valueOf(cn0));
-            satelliteRow.addView(cnoTextView);
-
-            TextView flagsTextView = new TextView(this);
-            flagsTextView.setText("Flags Data");
-            satelliteRow.addView(flagsTextView);
-
-            TextView elevTextView = new TextView(this);
-            elevTextView.setText(String.valueOf(elevation));
-            satelliteRow.addView(elevTextView);
-
-            TextView azimTextView = new TextView(this);
-            azimTextView.setText(String.valueOf(azimuth));
-            satelliteRow.addView(azimTextView);
-
-            // Add TableRow to TableLayout
-            satelliteTable.addView(satelliteRow);
-        }
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if (checkLocationPermission()) {
-            locationManager.registerGnssStatusCallback(gnssStatusCallback);
-        }
-    }
-
 
 
     @Override
