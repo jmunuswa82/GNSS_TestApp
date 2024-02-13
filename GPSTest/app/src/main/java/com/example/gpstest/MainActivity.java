@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.location.GnssStatus;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -19,6 +18,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TableLayout;
+import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
@@ -27,6 +27,8 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import android.location.GnssStatus;
+
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -89,8 +91,9 @@ public class MainActivity extends AppCompatActivity {
         pDopTextview = findViewById(R.id.pDopTextview);
         hvDopTextview = findViewById(R.id.hvDopTextview);
 
+        //3rd layer
         satelliteTable = findViewById(R.id.satelliteTable);
-        satelliteTable = findViewById(R.id.satelliteTable);
+
 
 
 
@@ -181,10 +184,118 @@ public class MainActivity extends AppCompatActivity {
         thread.start();
 
 
+        gnssStatusCallback = new GnssStatus.Callback() {
+            @Override
+            public void onSatelliteStatusChanged(GnssStatus status) {
+                gnssStatus = status;
+                updateSatelliteInfo();
+            }
+        };
+//request GNSS update
+        if (checkLocationPermission()) {
+            locationManager.registerGnssStatusCallback(gnssStatusCallback);
+        } else {
+            //request location permission
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    REQUEST_LOCATION_PERMISSION);
+        }
+
+
 }
 
+    private void updateSatelliteInfo() {
+        // Clear previous satellite information
+        satelliteTable.removeViews(1, satelliteTable.getChildCount() - 1);
+
+        // Iterate through each satellite
+        int satelliteCount = gnssStatus.getSatelliteCount();
+        for (int i = 0; i < satelliteCount; i++) {
+            // Retrieve satellite information
+            int prn = gnssStatus.getSvid(i);
+            String gnss = getGnssName(gnssStatus.getConstellationType(i));
+            float cf = gnssStatus.getCarrierFrequencyHz(i);
+            float cn0 = gnssStatus.getCn0DbHz(i);
+            int flags = gnssStatus.getFlags(i);
+            float elevation = gnssStatus.getElevationDegrees(i);
+            float azimuth = gnssStatus.getAzimuthDegrees(i);
+
+            // Create a new TableRow to hold satellite data
+            TableRow satelliteRow = new TableRow(this);
+
+            // Create TextViews for satellite data
+            TextView idTextView = new TextView(this);
+            idTextView.setText(String.valueOf(prn));
+            satelliteRow.addView(idTextView);
+
+            TextView gnssTextView = new TextView(this);
+            gnssTextView.setText(gnss);
+            satelliteRow.addView(gnssTextView);
+
+            TextView cfTextView = new TextView(this);
+            cfTextView.setText(String.valueOf(cf));
+            satelliteRow.addView(cfTextView);
+
+            TextView cnoTextView = new TextView(this);
+            cnoTextView.setText(String.valueOf(cn0));
+            satelliteRow.addView(cnoTextView);
+
+            TextView flagsTextView = new TextView(this);
+            flagsTextView.setText(getFlags(flags));
+            satelliteRow.addView(flagsTextView);
+
+            TextView elevTextView = new TextView(this);
+            elevTextView.setText(String.valueOf(elevation));
+            satelliteRow.addView(elevTextView);
+
+            TextView azimTextView = new TextView(this);
+            azimTextView.setText(String.valueOf(azimuth));
+            satelliteRow.addView(azimTextView);
+
+            // Add TableRow to TableLayout
+            satelliteTable.addView(satelliteRow);
+        }
+    }
+
+    private String getGnssName(int constellationType){
+        switch (constellationType){
+            case GnssStatus.CONSTELLATION_GPS:
+                return "GPS";
+            case GnssStatus.CONSTELLATION_GLONASS:
+                return "GLONASS";
+            case GnssStatus.CONSTELLATION_BEIDOU:
+                return "BEIDOU";
+            case GnssStatus.CONSTELLATION_GALILEO:
+                return "GALILEO";
+            case GnssStatus.CONSTELLATION_IRNSS:
+                return "IRNSS";
+            default:
+                return "UNKNOWN";
+        }
+    }
+
+    private String getFlags(int flags){
+        if ((flags & GnssStatus.GNSS_SV_FLAGS_HAS_EPHEMERIS_DATA) != 0) {
+            return "A";
+        } else if ((flags & GnssStatus.GNSS_SV_FLAGS_USED_IN_FIX) != 0) {
+            return "AU";
+        } else {
+            return "AE";
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (checkLocationPermission()) {
+            locationManager.registerGnssStatusCallback(gnssStatusCallback);
+        }
+    }
+
+
     private void updateTime() {
-        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss",
+                Locale.getDefault());
         String currentTime = sdf.format(new Date());
         timeTextview.setText("Time: " + currentTime);
     }
