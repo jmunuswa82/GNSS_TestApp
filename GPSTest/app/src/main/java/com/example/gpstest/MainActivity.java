@@ -6,10 +6,12 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.GnssStatus;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.Menu;
@@ -27,8 +29,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-import android.location.GnssStatus;
-
+import androidx.core.content.ContextCompat;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -39,19 +40,23 @@ import java.util.Locale;
 public class MainActivity extends AppCompatActivity {
 
     private static final int REQUEST_LOCATION_PERMISSION = 1001;
+    private static final int LOCATION_PERMISSION_REQUEST_CODE =100;
+    private static int requestcode = 0;
+    boolean iterationCountChanged = true;
 
     private LocationManager locationManager;
     private LocationListener locationListener;
     private long startTime;
     private List<Long> ttffList;
     private int coldStartCount;
-
-
+    private int iterationCount;
+    private long totalTTFF;
+    private Handler handler = new Handler();
 
 
     private ToggleButton startGPSButton;
     private Button clearGPSButton, startTTFFButton;
-    private TextView latTextview, longTextview, ttffTextview,timeTextview;
+    private TextView latTextview, longTextview, ttffTextview, timeTextview;
     private TextView altTextview, ehvTextview,
             altMslTextview, satsTextview,
             speedTextview, bearingTextview, sAccTextview,
@@ -95,47 +100,80 @@ public class MainActivity extends AppCompatActivity {
         satelliteTable = findViewById(R.id.satelliteTable);
 
 
-
-
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
         // Initialize location listener
         locationListener = new LocationListener() {
-            @Override
+
             public void onLocationChanged(Location location) {
-               // updateLocation(location);
+                //updateLocation(location);
                 double latitude = location.getLatitude();
                 double longitude = location.getLongitude();
                 double altitude = location.getAltitude();
-
-
-
-                latTextview.setText("Latitude: " + latitude);
-                Log.d("TTFF", "Latitude " + latitude);
-
-
-                longTextview.setText("Longitude: " + longitude);
-                Log.d("TTFF", "Longitude: " + longitude);
-
-
-                altTextview.setText(""+altitude);
-                Log.d("TTFF", "altitude" + altitude);
-
                 // Calculate TTFF
                 long currentTime = System.currentTimeMillis();
-                long ttff = (currentTime - startTime)/1000;
-                String ttffval = String.valueOf(ttff);
+                long ttff = (currentTime - startTime) / 1000;
 
-                ttffTextview.setText("TTFF:"+ttffval+"s");
+                if (requestcode == LOCATION_PERMISSION_REQUEST_CODE) {
+                    if (iterationCount > 0) {
 
-                Log.d("TTFF", "Time to First Fix (TTFF): " + ttffval + " seconds");
-                // Continue listening for location updates
-                startTime = currentTime;
+                        if (iterationCountChanged) {
+                        latTextview.setText("Latitude: " + latitude);
+                        Log.d("TTFF", "Latitude " + latitude);
 
-                // Once we receive a location update, we can stop listening for further updates
-              locationManager.removeUpdates(this);
+                        longTextview.setText("Longitude: " + longitude);
+                        Log.d("TTFF", "Longitude: " + longitude);
 
+                        altTextview.setText("" + altitude);
+                        Log.d("TTFF", "altitude" + altitude);
+
+                        String ttffval = String.valueOf(ttff);
+                        ttffTextview.setText("TTFF:" + ttffval + "s");
+
+                            totalTTFF += ttff;
+                            Log.d("TTFF", "TTFF for iteration " + iterationCount + ": " + ttff + " s");
+                            iterationCountChanged = false; // Reset the flag
+                        }
+
+                        // Start next iteration after a delay of 10 seconds
+                        handler.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                iterationCountChanged = false;
+                                startNextIteration();
+                            }
+                        }, 10000); // 10 seconds delay
+
+                        // Continue listening for location updates
+                        startTime = currentTime;
+
+                    } else {
+                        // Once we receive a location update, we can stop listening for further updates
+                        locationManager.removeUpdates(this);
+                    }
+                } else if (requestcode == REQUEST_LOCATION_PERMISSION) {
+                    latTextview.setText("Latitude: " + latitude);
+                    Log.d("TTFF", "Latitude " + latitude);
+
+                    longTextview.setText("Longitude: " + longitude);
+                    Log.d("TTFF", "Longitude: " + longitude);
+
+                    altTextview.setText("" + altitude);
+                    Log.d("TTFF", "altitude" + altitude);
+
+                    String ttffval = String.valueOf(ttff);
+                    ttffTextview.setText("TTFF:" + ttffval + "s");
+
+                    Log.d("TTFF", "Time to First Fix (TTFF): " + ttffval + " seconds");
+
+                    // Continue listening for location updates
+                    startTime = currentTime;
+
+                    // Once we receive a location update, we can stop listening for further updates
+                    locationManager.removeUpdates(this);
+                }
             }
+
 
             @Override
             public void onStatusChanged(String provider, int status, Bundle extras) {
@@ -159,6 +197,25 @@ public class MainActivity extends AppCompatActivity {
                     startLocationUpdates();
                 } else {
                     stopLocationUpdates();
+                }
+            }
+        });
+        startTTFFButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Check for location permission
+                if (ContextCompat.checkSelfPermission(MainActivity.this,
+                        Manifest.permission.ACCESS_FINE_LOCATION)
+                        != PackageManager.PERMISSION_GRANTED) {
+                    // Request permission if not granted
+                    ActivityCompat.requestPermissions(MainActivity.this,
+                            new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                            LOCATION_PERMISSION_REQUEST_CODE);
+                } else {
+                    // Permission already granted, start TTFF measurement
+                    requestcode = LOCATION_PERMISSION_REQUEST_CODE;
+                    startTTFFMeasurement();
+
                 }
             }
         });
@@ -202,7 +259,44 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
-}
+    }
+
+    private void startNextIteration() {
+        iterationCount++;
+        if (iterationCount <100) {
+            startTime = System.currentTimeMillis();
+            iterationCountChanged = true;
+            if (ActivityCompat.checkSelfPermission(this,
+                    Manifest.permission.ACCESS_FINE_LOCATION)
+                    != PackageManager.PERMISSION_GRANTED
+                    && ActivityCompat.checkSelfPermission(this,
+                    Manifest.permission.ACCESS_COARSE_LOCATION)
+                    !=PackageManager.PERMISSION_GRANTED)
+            {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                return;
+            }
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+                    0, 0, locationListener);
+        } else {
+            double averageTTFF = (double) totalTTFF / 100;
+            Log.d("TTFF", "Average TTFF for 100 iterations: " + averageTTFF + " s");
+            locationManager.removeUpdates((LocationListener) this);
+
+        }
+    }
+
+    private void startTTFFMeasurement() {
+        iterationCount = 0;
+        totalTTFF = 0;
+        startNextIteration();
+    }
 
     private void updateSatelliteInfo() {
         // Clear previous satellite information
@@ -327,6 +421,7 @@ public class MainActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                     REQUEST_LOCATION_PERMISSION);
+
         }
     }
 
@@ -335,19 +430,18 @@ public class MainActivity extends AppCompatActivity {
         Toast.makeText(MainActivity.this, "GPS Stopped", Toast.LENGTH_SHORT).show();
     }
 
-   /* private void updateLocation(Location location) {
+    private void updateLocation(Location location) {
         if (location != null) {
             double latitude = location.getLatitude();
             double longitude = location.getLongitude();
             double altitude = location.getAltitude();
 
 
-
             latTextview.setText("Latitude: " + latitude);
             longTextview.setText("Longitude: " + longitude);
             altTextview.setText(""+altitude);
         }
-    }*/
+    }
 
     private void showLocationSettingsDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
@@ -383,12 +477,23 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == REQUEST_LOCATION_PERMISSION) {
             if (grantResults.length > 0
                     && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                 requestcode = REQUEST_LOCATION_PERMISSION;
                 Log.d("Location","Allow location permissions");
 
                 startLocationUpdates();
             } else {
                 Toast.makeText(this,
                         "Location permission denied", Toast.LENGTH_SHORT).show();
+            }
+        } else if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
+            if (grantResults.length > 0 &&
+                    grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Permission granted, start TTFF measurement
+                requestcode = LOCATION_PERMISSION_REQUEST_CODE;
+                startTTFFMeasurement();
+            } else {
+                // Permission denied, log a message
+                Log.e("TTFF", "Location permission denied");
             }
         }
     }
