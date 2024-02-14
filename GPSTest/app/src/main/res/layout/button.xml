@@ -24,7 +24,7 @@
                 android:layout_height="wrap_content"
                 android:checked="false"
                 android:layout_margin="10dp"
-                android:background="#FF325933"
+                android:background="#1b49b2"
                 android:textColor="@color/white"
                 android:textOff="Start GPS"
                 android:textOn="Stop GPS"
@@ -36,7 +36,6 @@
                 android:layout_height="wrap_content"
                 android:text="Clear GPS"
                 android:layout_margin="10dp"
-                android:background="#FF325933"
                 android:textColor="@color/white"
                />
 
@@ -46,7 +45,7 @@
                 android:layout_height="wrap_content"
                 android:text="Start TTFF"
                 android:layout_margin="10dp"
-                android:background="#FF325933"
+                android:background="#1b49b2"
                 android:textColor="@color/white"/>
 
         </LinearLayout>
