@@ -2,16 +2,17 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#EFF3F2">
+    android:background="@drawable/layout_border"
+    >
 
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_alignParentTop="true"
         android:layout_margin="16dp"
         android:baselineAligned="false">
+
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -24,7 +25,7 @@
                 android:layout_height="wrap_content"
                 android:checked="false"
                 android:layout_margin="10dp"
-                android:background="#1b49b2"
+                android:background="#FF184C47"
                 android:textColor="@color/white"
                 android:textOff="Start GPS"
                 android:textOn="Stop GPS"
@@ -34,19 +35,20 @@
                 android:id="@+id/clearGPSButton"
                 android:layout_width="140dp"
                 android:layout_height="wrap_content"
-                android:text="Clear GPS"
                 android:layout_margin="10dp"
-                android:textColor="@color/white"
-               />
+                android:background="#FF184C47"
+                android:baselineAligned="true"
+                android:text="Clear GPS"
+                android:textColor="@color/white" />
 
             <Button
                 android:id="@+id/startTTFFButton"
                 android:layout_width="140dp"
                 android:layout_height="wrap_content"
-                android:text="Start TTFF"
                 android:layout_margin="10dp"
-                android:background="#1b49b2"
-                android:textColor="@color/white"/>
+                android:background="#FF184C47"
+                android:text="Start TTFF"
+                android:textColor="@color/white" />
 
         </LinearLayout>
 

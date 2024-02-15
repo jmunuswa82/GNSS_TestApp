@@ -7,8 +7,12 @@
         android:layout_height="match_parent"
         android:layout_width="match_parent"
         android:rowCount="7"
+        android:paddingLeft="35dp"
+        android:paddingTop="15dp"
+        android:paddingBottom="10dp"
         android:columnCount="4"
-        android:background="#ECF6F5"
+        android:background="@drawable/layout_border"
+
     >
 
     <TextView
