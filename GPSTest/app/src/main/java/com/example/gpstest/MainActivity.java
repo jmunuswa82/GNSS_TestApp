@@ -312,6 +312,7 @@ public class MainActivity extends AppCompatActivity {
             float elevation = gnssStatus.getElevationDegrees(i);
             float azimuth = gnssStatus.getAzimuthDegrees(i);
 
+
             // Create a new TableRow to hold satellite data
             TableRow satelliteRow = new TableRow(this);
 
@@ -325,8 +326,9 @@ public class MainActivity extends AppCompatActivity {
             satelliteRow.addView(gnssTextView);
 
             TextView cfTextView = new TextView(this);
-            cfTextView.setText("CF Data");
+            cfTextView.setText(estimateCarrierFrequency(prn, constellationType)); // Display estimated CF value
             satelliteRow.addView(cfTextView);
+
 
             TextView cnoTextView = new TextView(this);
             cnoTextView.setText(cn0 > 0 ? String.valueOf(cn0) : ""); // Display C/No if available
@@ -348,6 +350,43 @@ public class MainActivity extends AppCompatActivity {
             satelliteTable.addView(satelliteRow);
         }
     }
+
+    // Method to estimate CF value in terms of L1, L2, L5, etc. based on PRN and constellation type
+    private String estimateCarrierFrequency(int prn, int constellationType) {
+        // Define frequency bands for different constellations
+        String cf;
+        switch (constellationType) {
+            case GnssStatus.CONSTELLATION_GPS:
+                // For GPS, even PRN => L1, odd PRN => L2
+                cf = (prn % 2 == 0) ? "L1" : "L2";
+                break;
+            case GnssStatus.CONSTELLATION_GLONASS:
+                // For GLONASS, L1 = 1602 + 0.5625 * (prn - 64), L2 = 1246 + 0.4375 * (prn - 64)
+                cf = (prn > 64) ? "L1" : "L2";
+                break;
+            case GnssStatus.CONSTELLATION_GALILEO:
+                // For GALILEO, E1
+                cf = "E1";
+                break;
+            case GnssStatus.CONSTELLATION_BEIDOU:
+                // For BEIDOU, B1
+                cf = "B1";
+                break;
+            case GnssStatus.CONSTELLATION_QZSS:
+                // For QZSS, L1
+                cf = "L1";
+                break;
+            case GnssStatus.CONSTELLATION_SBAS:
+                // For SBAS, L1
+                cf = "L1";
+                break;
+            // Add cases for other constellations as needed
+            default:
+                cf = "Unknown";
+        }
+        return cf;
+    }
+
 
     private String getConstellationType(int constellationType){
         switch (constellationType){
