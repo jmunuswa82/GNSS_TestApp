@@ -31,11 +31,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -56,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
 
     private ToggleButton startGPSButton;
     private Button clearGPSButton, startTTFFButton;
-    private TextView latTextview, longTextview, ttffTextview, timeTextview;
+    private TextView latTextview, longTextview, ttffTextview, iterCount, timeDelay;
     private TextView altTextview, ehvTextview,
             altMslTextview, satsTextview,
             speedTextview, bearingTextview, sAccTextview,
@@ -72,8 +68,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
 
-        ttffList = new ArrayList<>();
-        coldStartCount = 0;
 
         //In First layout
         clearGPSButton = findViewById(R.id.clearGPSButton);
@@ -82,7 +76,9 @@ public class MainActivity extends AppCompatActivity {
         latTextview = findViewById(R.id.latTextview);
         longTextview = findViewById(R.id.longTextview);
         ttffTextview = findViewById(R.id.ttffTextview);
-        timeTextview = findViewById(R.id.timeTextview);
+        timeDelay  = findViewById(R.id.timeDelay);
+        iterCount = findViewById(R.id.iterCount);
+
 
         //In second Layout
         altTextview = findViewById(R.id.altTextview);
@@ -106,73 +102,50 @@ public class MainActivity extends AppCompatActivity {
         locationListener = new LocationListener() {
 
             public void onLocationChanged(Location location) {
-                //updateLocation(location);
+                // Extract location information
                 double latitude = location.getLatitude();
                 double longitude = location.getLongitude();
                 double altitude = location.getAltitude();
+
                 // Calculate TTFF
                 long currentTime = System.currentTimeMillis();
                 long ttff = (currentTime - startTime) / 1000;
 
-                if (requestcode == LOCATION_PERMISSION_REQUEST_CODE) {
-                    if (iterationCount > 0) {
+                // Update UI elements
+                updateUI(latitude, longitude, altitude, ttff);
+                // Log information
+                Log.d("TTFF", "Latitude: " + latitude);
+                Log.d("TTFF", "Longitude: " + longitude);
+                Log.d("TTFF", "Altitude: " + altitude);
+                Log.d("TTFF", "TTFF: " + ttff + "s");
+                Log.d("TTFF", "Iteration count: " + iterationCount);
 
-                        if (iterationCountChanged) {
-                        latTextview.setText("Latitude: " + latitude);
-                        Log.d("TTFF", "Latitude " + latitude);
-
-                        longTextview.setText("Longitude: " + longitude);
-                        Log.d("TTFF", "Longitude: " + longitude);
-
-                        altTextview.setText("" + altitude);
-                        Log.d("TTFF", "altitude" + altitude);
-
-                        String ttffval = String.valueOf(ttff);
-                        ttffTextview.setText("TTFF:" + ttffval + "s");
-
-                            totalTTFF += ttff;
-                            Log.d("TTFF", "TTFF for iteration " + iterationCount + ": " + ttff + " s");
-                            iterationCountChanged = false; // Reset the flag
-                        }
-
-                        // Start next iteration after a delay of 10 seconds
-                        handler.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                iterationCountChanged = false;
-                                startNextIteration();
-                            }
-                        }, 10000); // 10 seconds delay
-
-                        // Continue listening for location updates
-                        startTime = currentTime;
-
-                    } else {
-                        // Once we receive a location update, we can stop listening for further updates
-                        locationManager.removeUpdates(this);
-                    }
-                } else if (requestcode == REQUEST_LOCATION_PERMISSION) {
-                    latTextview.setText("Latitude: " + latitude);
-                    Log.d("TTFF", "Latitude " + latitude);
-
-                    longTextview.setText("Longitude: " + longitude);
-                    Log.d("TTFF", "Longitude: " + longitude);
-
-                    altTextview.setText("" + altitude);
-                    Log.d("TTFF", "altitude" + altitude);
-
-                    String ttffval = String.valueOf(ttff);
-                    ttffTextview.setText("TTFF:" + ttffval + "s");
-
-                    Log.d("TTFF", "Time to First Fix (TTFF): " + ttffval + " seconds");
-
-                    // Continue listening for location updates
-                    startTime = currentTime;
-
-                    // Once we receive a location update, we can stop listening for further updates
-                    locationManager.removeUpdates(this);
+                // Check request code
+                if (requestcode == LOCATION_PERMISSION_REQUEST_CODE && iterationCount > 0) {
+                    // Schedule next iteration after a delay
+                    displayTimeDelay();
+                    totalTTFF +=ttff;
+                    scheduleNextIteration();
+                } else {
+                    // Stop location updates
+                    stopLocationUpdates();
                 }
             }
+            private void stopLocationUpdates() {
+                locationManager.removeUpdates(this);
+            }
+
+            private void updateUI(double latitude, double longitude, double altitude, long ttff) {
+                runOnUiThread(() -> {
+                    latTextview.setText("Latitude: " + latitude);
+                    longTextview.setText("Longitude: " + longitude);
+                    altTextview.setText("" + altitude);
+                    ttffTextview.setText("TTFF: " + ttff + "s");
+                    iterCount.setText("IterCount: " + iterationCount);
+                });
+            }
+
+
 
 
             @Override
@@ -219,26 +192,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-        // Update time every second
-        Thread thread = new Thread() {
-            @Override
-            public void run() {
-                try {
-                    while (!isInterrupted()) {
-                        Thread.sleep(1000);
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                updateTime();
-                            }
-                        });
-                    }
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        };
-        thread.start();
 
 
         gnssStatusCallback = new GnssStatus.Callback() {
@@ -260,6 +213,21 @@ public class MainActivity extends AppCompatActivity {
 
 
     }
+    private void scheduleNextIteration() {
+        handler.postDelayed(this::startNextIteration, 10000); // Schedule after 10 seconds
+    }
+    private void displayTimeDelay() {
+        runOnUiThread(() -> {
+            timeDelay.setText("Time Delay: 10s");
+            Log.d("TTFF", "Time Delay: 10s");
+        });
+
+        handler.postDelayed(() -> {
+            runOnUiThread(() -> timeDelay.setText("Time Delay:")); // Hide the time delay information
+        }, 10000); // Hide after 10 seconds
+    }
+
+
 
     private void startNextIteration() {
         iterationCount++;
@@ -374,13 +342,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
-    private void updateTime() {
-        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss",
-                Locale.getDefault());
-        String currentTime = sdf.format(new Date());
-        timeTextview.setText("Time: " + currentTime);
-    }
 
 
     @Override

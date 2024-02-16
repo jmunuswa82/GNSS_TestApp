@@ -7,15 +7,18 @@
 
 
     <LinearLayout
-        android:layout_width="match_parent"
+        android:layout_width="384dp"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_margin="16dp"
-        android:baselineAligned="false">
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        android:baselineAligned="false"
+        android:orientation="horizontal">
 
         <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_width="10dp"
+            android:layout_height="221dp"
             android:layout_weight="1"
             android:orientation="vertical">
 
@@ -23,13 +26,12 @@
                 android:id="@+id/startGpsButton"
                 android:layout_width="140dp"
                 android:layout_height="wrap_content"
-                android:checked="false"
                 android:layout_margin="10dp"
                 android:background="#FF184C47"
+                android:checked="false"
                 android:textColor="@color/white"
                 android:textOff="Start GPS"
-                android:textOn="Stop GPS"
-                />
+                android:textOn="Stop GPS" />
 
             <Button
                 android:id="@+id/clearGPSButton"
@@ -53,15 +55,15 @@
         </LinearLayout>
 
         <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
+            android:layout_width="42dp"
+            android:layout_height="221dp"
             android:layout_weight="1"
             android:orientation="vertical">
 
             <TextView
                 android:id="@+id/latTextview"
                 android:layout_width="match_parent"
-                android:layout_height="41dp"
+                android:layout_height="wrap_content"
                 android:text="Latitude: "
                 android:textColor="@color/black"
                 android:textSize="16sp"
@@ -70,7 +72,7 @@
             <TextView
                 android:id="@+id/longTextview"
                 android:layout_width="match_parent"
-                android:layout_height="40dp"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:text="Longitude: "
                 android:textColor="@color/black"
@@ -78,26 +80,35 @@
                 android:textStyle="bold" />
 
             <TextView
-                android:id="@+id/timeTextview"
+                android:id="@+id/timeDelay"
                 android:layout_width="match_parent"
-                android:layout_height="38dp"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:text="Time: "
+                android:text="Time Delay:"
                 android:textColor="@color/black"
                 android:textSize="16sp"
-                android:textStyle="bold"
-                />
-
+                android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/ttffTextview"
                 android:layout_width="match_parent"
-                android:layout_height="32dp"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:text="TTFF: "
                 android:textColor="@color/black"
                 android:textSize="16sp"
                 android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/iterCount"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="IterCount: "
+                android:textColor="@color/black"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
 
         </LinearLayout>
 
