@@ -201,7 +201,8 @@ public class MainActivity extends AppCompatActivity {
                 updateSatelliteInfo();
             }
         };
-//request GNSS update
+
+        //request GNSS update
         if (checkLocationPermission()) {
             locationManager.registerGnssStatusCallback(gnssStatusCallback);
         } else {
@@ -280,44 +281,87 @@ public class MainActivity extends AppCompatActivity {
             float elevation = gnssStatus.getElevationDegrees(i);
             float azimuth = gnssStatus.getAzimuthDegrees(i);
 
+            //flag status
+            String flagStatus = estimateFlagStatus(constellationType, cn0, elevation, azimuth);
 
-            // Create a new TableRow to hold satellite data
-            TableRow satelliteRow = new TableRow(this);
+            if(elevation % 2 == 0) {
+                // Create a new TableRow to hold satellite data
+                TableRow satelliteRow = new TableRow(this);
 
-            // Create TextViews for satellite data
-            TextView idTextView = new TextView(this);
-            idTextView.setText(String.valueOf(prn));
-            satelliteRow.addView(idTextView);
+                // Create TextViews for satellite data
+                TextView idTextView = new TextView(this);
+                idTextView.setText(String.valueOf(prn));
+                satelliteRow.addView(idTextView);
 
-            TextView gnssTextView = new TextView(this);
-            gnssTextView.setText(getConstellationType(constellationType));
-            satelliteRow.addView(gnssTextView);
+                TextView gnssTextView = new TextView(this);
+                gnssTextView.setText(getConstellationType(constellationType));
+                satelliteRow.addView(gnssTextView);
 
-            TextView cfTextView = new TextView(this);
-            cfTextView.setText(estimateCarrierFrequency(prn, constellationType)); // Display estimated CF value
-            satelliteRow.addView(cfTextView);
+                TextView cfTextView = new TextView(this);
+                cfTextView.setText(estimateCarrierFrequency(prn, constellationType)); // Display estimated CF value
+                satelliteRow.addView(cfTextView);
 
 
-            TextView cnoTextView = new TextView(this);
-            cnoTextView.setText(cn0 > 0 ? String.valueOf(cn0) : ""); // Display C/No if available
-            satelliteRow.addView(cnoTextView);
+                TextView cnoTextView = new TextView(this);
+                cnoTextView.setText(cn0 > 0 ? String.valueOf(cn0) : ""); // Display C/No if available
+                satelliteRow.addView(cnoTextView);
 
-            TextView flagsTextView = new TextView(this);
-            flagsTextView.setText("Flags Data"); // Placeholder for Flags data
-            satelliteRow.addView(flagsTextView);
+                TextView flagStatusTextView = new TextView(this);
+                flagStatusTextView.setText(flagStatus);
+                satelliteRow.addView(flagStatusTextView);
 
-            TextView elevTextView = new TextView(this);
-            elevTextView.setText(elevation > 0 ? String.valueOf(elevation) : ""); // Display elevation if available
-            satelliteRow.addView(elevTextView);
+                TextView elevTextView = new TextView(this);
+                elevTextView.setText(String.valueOf(elevation) + "°"); // Display elevation with "°" symbol
+                satelliteRow.addView(elevTextView);
 
-            TextView azimTextView = new TextView(this);
-            azimTextView.setText(azimuth > 0 ? String.valueOf(azimuth) : ""); // Display azimuth if available
-            satelliteRow.addView(azimTextView);
+                TextView azimTextView = new TextView(this);
+                azimTextView.setText(azimuth > 0 ? String.valueOf(azimuth) + "°" : ""); // Display azimuth if available
+                satelliteRow.addView(azimTextView);
 
-            // Add TableRow to TableLayout
-            satelliteTable.addView(satelliteRow);
+                // Add TableRow to TableLayout
+                satelliteTable.addView(satelliteRow);
+            }
         }
     }
+
+    private String estimateFlagStatus(int constellationType, float cn0, float elevation, float azimuth) {
+        switch (constellationType) {
+            case GnssStatus.CONSTELLATION_GPS:
+                // For GPS, assume healthy if C/N0 > 40 and elevation > 15 degrees
+                if (cn0 > 40 && elevation > 15) {
+                    return "A"; // "A" for healthy
+                } else {
+                    return "AE"; // "AE" for unhealthy
+                }
+            case GnssStatus.CONSTELLATION_GLONASS:
+                // For GLONASS, assume healthy if C/N0 > 35 and elevation > 10 degrees
+                if (cn0 > 35 && elevation > 10) {
+                    return "A"; // "A" for healthy
+                } else {
+                    return "AE"; // "AE" for unhealthy
+                }
+            case GnssStatus.CONSTELLATION_BEIDOU:
+                // For BEIDOU, assume healthy if C/N0 > 38 and azimuth between 30 and 330 degrees
+                if (cn0 > 38 && azimuth > 30 && azimuth < 330) {
+                    return "A"; // "A" for healthy
+                } else {
+                    return "AE"; // "AE" for unhealthy
+                }
+            case GnssStatus.CONSTELLATION_GALILEO:
+                // For GALILEO, assume healthy if C/N0 > 42 and elevation > 20 degrees
+                if (cn0 > 42 && elevation > 20) {
+                    return "A"; // "A" for healthy
+                } else {
+                    return "AE"; // "AE" for unhealthy
+                }
+            default:
+                // For other constellations, return "AU" for unknown health status
+                return "AU"; // "AU" for unknown health status
+        }
+    }
+
+
+
 
     // Method to estimate CF value in terms of L1, L2, L5, etc. based on PRN and constellation type
     private String estimateCarrierFrequency(int prn, int constellationType) {
