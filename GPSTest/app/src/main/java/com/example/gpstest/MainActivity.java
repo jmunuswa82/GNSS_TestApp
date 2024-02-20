@@ -38,14 +38,18 @@ public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_LOCATION_PERMISSION = 1001;
     private static final int LOCATION_PERMISSION_REQUEST_CODE =100;
     private static int requestcode = 0;
-    boolean iterationCountChanged = true;
+    private LocationListener originalLocationListener;
+
+    // Declare a variable to keep track of the previous iteration count
+    private int previousIterationCount = 0;
+
 
     private LocationManager locationManager;
     private LocationListener locationListener;
     private long startTime;
-    private List<Long> ttffList;
-    private int coldStartCount;
-    private int iterationCount;
+
+
+    private int iterationCount = 1;
     private long totalTTFF;
     private Handler handler = new Handler();
 
@@ -95,8 +99,8 @@ public class MainActivity extends AppCompatActivity {
         //3rd layer
         satelliteTable = findViewById(R.id.satelliteTable);
 
-
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        handler = new Handler();
 
         // Initialize location listener
         locationListener = new LocationListener() {
@@ -106,19 +110,42 @@ public class MainActivity extends AppCompatActivity {
                 double latitude = location.getLatitude();
                 double longitude = location.getLongitude();
                 double altitude = location.getAltitude();
-
                 // Calculate TTFF
                 long currentTime = System.currentTimeMillis();
                 long ttff = (currentTime - startTime) / 1000;
 
-                // Update UI elements
-                updateUI(latitude, longitude, altitude, ttff);
-                // Log information
-                Log.d("TTFF", "Latitude: " + latitude);
-                Log.d("TTFF", "Longitude: " + longitude);
-                Log.d("TTFF", "Altitude: " + altitude);
-                Log.d("TTFF", "TTFF: " + ttff + "s");
-                Log.d("TTFF", "Iteration count: " + iterationCount);
+                // Get speed in meters per second
+                float speed = location.getSpeed();
+                // Get bearing in degrees clockwise from north
+                float bearing = location.getBearing();
+
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                    float speedAccuracy = location.getSpeedAccuracyMetersPerSecond();
+                    // Get the estimated accuracy
+                    float accuracy = location.getAccuracy();
+                    // Assuming that the accuracy value represents both position and bearing accuracy
+                    double bearingAccuracy = accuracy;
+
+
+                    // Check if the iteration count has changed
+                    if (iterationCount != previousIterationCount) {
+                        // Update the previous iteration count
+                        previousIterationCount = iterationCount;
+                        // Update UI elements
+                        updateUI(latitude, longitude, altitude, ttff, speed, bearing,speedAccuracy,bearingAccuracy);
+                        // Log information
+                        Log.d("TTFF", "Latitude: " + latitude);
+                        Log.d("TTFF", "Longitude: " + longitude);
+                        Log.d("TTFF", "Altitude: " + altitude);
+                        Log.d("TTFF", "TTFF: " + ttff + "s");
+                        Log.d("TTFF", "Speed:" + speed);
+                        Log.d("TTFF", "Bearing:" + bearing);
+                        Log.d("TTFF", "Speed Accuracy:" + speedAccuracy);
+                        Log.d("TTFF", "Bearing Accuracy:" + bearingAccuracy);
+
+                        Log.d("TTFF", "Iteration count: " + iterationCount);
+                    }
+                }
 
                 // Check request code
                 if (requestcode == LOCATION_PERMISSION_REQUEST_CODE && iterationCount > 0) {
@@ -135,13 +162,21 @@ public class MainActivity extends AppCompatActivity {
                 locationManager.removeUpdates(this);
             }
 
-            private void updateUI(double latitude, double longitude, double altitude, long ttff) {
+            private void updateUI(double latitude, double longitude,
+                                  double altitude, long ttff,float speed,
+                                  float bearing, float speedAccuracy,
+                                  double bearingAccuracy) {
                 runOnUiThread(() -> {
-                    latTextview.setText("Latitude: " + latitude);
-                    longTextview.setText("Longitude: " + longitude);
-                    altTextview.setText("" + altitude);
-                    ttffTextview.setText("TTFF: " + ttff + "s");
-                    iterCount.setText("IterCount: " + iterationCount);
+                        latTextview.setText("Latitude: " + latitude);
+                        longTextview.setText("Longitude: " + longitude);
+                        altTextview.setText("" + altitude);
+                        ttffTextview.setText("TTFF: " + ttff + "s");
+                        speedTextview.setText(""+speed);
+                        bearingTextview.setText(""+bearing);
+                        sAccTextview.setText(""+speedAccuracy);
+                        bAccTextview.setText(""+bearingAccuracy);
+
+                        iterCount.setText("IterCount: " + iterationCount);
                 });
             }
 
@@ -173,9 +208,14 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+
         startTTFFButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Toast.makeText(MainActivity.this,
+                        "TTFF Start", Toast.LENGTH_SHORT).show();
+                Log.d("TTFF","start TTFF pressed");
+
                 // Check for location permission
                 if (ContextCompat.checkSelfPermission(MainActivity.this,
                         Manifest.permission.ACCESS_FINE_LOCATION)
@@ -211,11 +251,10 @@ public class MainActivity extends AppCompatActivity {
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                     REQUEST_LOCATION_PERMISSION);
         }
-
-
     }
     private void scheduleNextIteration() {
-        handler.postDelayed(this::startNextIteration, 10000); // Schedule after 10 seconds
+        // Schedule after 10 seconds
+        handler.postDelayed(this::startNextIteration, 10000);
     }
     private void displayTimeDelay() {
         runOnUiThread(() -> {
@@ -224,7 +263,8 @@ public class MainActivity extends AppCompatActivity {
         });
 
         handler.postDelayed(() -> {
-            runOnUiThread(() -> timeDelay.setText("Time Delay:")); // Hide the time delay information
+            // Hide the time delay information
+            runOnUiThread(() -> timeDelay.setText("Time Delay:"));
         }, 10000); // Hide after 10 seconds
     }
 
@@ -232,9 +272,8 @@ public class MainActivity extends AppCompatActivity {
 
     private void startNextIteration() {
         iterationCount++;
-        if (iterationCount <100) {
+        if (iterationCount < 100 || iterationCount == 100) {
             startTime = System.currentTimeMillis();
-            iterationCountChanged = true;
             if (ActivityCompat.checkSelfPermission(this,
                     Manifest.permission.ACCESS_FINE_LOCATION)
                     != PackageManager.PERMISSION_GRANTED
@@ -253,17 +292,17 @@ public class MainActivity extends AppCompatActivity {
             }
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
                     0, 0, locationListener);
-        } else {
+        } else if(iterationCount == 101 && previousIterationCount == 100) {
             double averageTTFF = (double) totalTTFF / 100;
             Log.d("TTFF", "Average TTFF for 100 iterations: " + averageTTFF + " s");
-            locationManager.removeUpdates((LocationListener) this);
-
+            locationManager.removeUpdates(originalLocationListener);
         }
     }
 
     private void startTTFFMeasurement() {
         iterationCount = 0;
         totalTTFF = 0;
+        originalLocationListener = locationListener; // Assign the original listener
         startNextIteration();
     }
 
@@ -298,12 +337,14 @@ public class MainActivity extends AppCompatActivity {
                 satelliteRow.addView(gnssTextView);
 
                 TextView cfTextView = new TextView(this);
-                cfTextView.setText(estimateCarrierFrequency(prn, constellationType)); // Display estimated CF value
+                // Display estimated CF value
+                cfTextView.setText(estimateCarrierFrequency(prn, constellationType));
                 satelliteRow.addView(cfTextView);
 
 
                 TextView cnoTextView = new TextView(this);
-                cnoTextView.setText(cn0 > 0 ? String.valueOf(cn0) : ""); // Display C/No if available
+                // Display C/No if available
+                cnoTextView.setText(cn0 > 0 ? String.valueOf(cn0) : "");
                 satelliteRow.addView(cnoTextView);
 
                 TextView flagStatusTextView = new TextView(this);
@@ -311,11 +352,13 @@ public class MainActivity extends AppCompatActivity {
                 satelliteRow.addView(flagStatusTextView);
 
                 TextView elevTextView = new TextView(this);
-                elevTextView.setText(String.valueOf(elevation) + "°"); // Display elevation with "°" symbol
+                // Display elevation with "°" symbol
+                elevTextView.setText(String.valueOf(elevation) + "°");
                 satelliteRow.addView(elevTextView);
 
                 TextView azimTextView = new TextView(this);
-                azimTextView.setText(azimuth > 0 ? String.valueOf(azimuth) + "°" : ""); // Display azimuth if available
+                // Display azimuth if available
+                azimTextView.setText(azimuth > 0 ? String.valueOf(azimuth) + "°" : "");
                 satelliteRow.addView(azimTextView);
 
                 // Add TableRow to TableLayout
@@ -324,24 +367,28 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private String estimateFlagStatus(int constellationType, float cn0, float elevation, float azimuth) {
+    private String estimateFlagStatus(int constellationType,
+                                      float cn0, float elevation, float azimuth) {
         switch (constellationType) {
             case GnssStatus.CONSTELLATION_GPS:
-                // For GPS, assume healthy if C/N0 > 40 and elevation > 15 degrees
+                // For GPS, assume healthy if C/N0 > 40
+                // and elevation > 15 degrees
                 if (cn0 > 40 && elevation > 15) {
                     return "A"; // "A" for healthy
                 } else {
                     return "AE"; // "AE" for unhealthy
                 }
             case GnssStatus.CONSTELLATION_GLONASS:
-                // For GLONASS, assume healthy if C/N0 > 35 and elevation > 10 degrees
+                // For GLONASS, assume healthy if C/N0 > 35
+                // and elevation > 10 degrees
                 if (cn0 > 35 && elevation > 10) {
                     return "A"; // "A" for healthy
                 } else {
                     return "AE"; // "AE" for unhealthy
                 }
             case GnssStatus.CONSTELLATION_BEIDOU:
-                // For BEIDOU, assume healthy if C/N0 > 38 and azimuth between 30 and 330 degrees
+                // For BEIDOU, assume healthy if C/N0 > 38
+                // and azimuth between 30 and 330 degrees
                 if (cn0 > 38 && azimuth > 30 && azimuth < 330) {
                     return "A"; // "A" for healthy
                 } else {
@@ -355,7 +402,8 @@ public class MainActivity extends AppCompatActivity {
                     return "AE"; // "AE" for unhealthy
                 }
             default:
-                // For other constellations, return "AU" for unknown health status
+                // For other constellations,
+                // return "AU" for unknown health status
                 return "AU"; // "AU" for unknown health status
         }
     }
@@ -363,7 +411,8 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-    // Method to estimate CF value in terms of L1, L2, L5, etc. based on PRN and constellation type
+    // Method to estimate CF value in terms of L1, L2, L5, etc.
+    // based on PRN and constellation type
     private String estimateCarrierFrequency(int prn, int constellationType) {
         // Define frequency bands for different constellations
         String cf;
@@ -373,7 +422,8 @@ public class MainActivity extends AppCompatActivity {
                 cf = (prn % 2 == 0) ? "L1" : "L2";
                 break;
             case GnssStatus.CONSTELLATION_GLONASS:
-                // For GLONASS, L1 = 1602 + 0.5625 * (prn - 64), L2 = 1246 + 0.4375 * (prn - 64)
+                // For GLONASS, L1 = 1602 + 0.5625 * (prn - 64),
+                // L2 = 1246 + 0.4375 * (prn - 64)
                 cf = (prn > 64) ? "L1" : "L2";
                 break;
             case GnssStatus.CONSTELLATION_GALILEO:
@@ -425,8 +475,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
@@ -471,10 +519,11 @@ public class MainActivity extends AppCompatActivity {
 
     private void stopLocationUpdates() {
         locationManager.removeUpdates(locationListener);
-        Toast.makeText(MainActivity.this, "GPS Stopped", Toast.LENGTH_SHORT).show();
+        Toast.makeText(MainActivity.this,
+                "GPS Stopped", Toast.LENGTH_SHORT).show();
     }
 
-    private void updateLocation(Location location) {
+   /* private void updateLocation(Location location) {
         if (location != null) {
             double latitude = location.getLatitude();
             double longitude = location.getLongitude();
@@ -485,10 +534,11 @@ public class MainActivity extends AppCompatActivity {
             longTextview.setText("Longitude: " + longitude);
             altTextview.setText(""+altitude);
         }
-    }
+    }*/
 
     private void showLocationSettingsDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+        AlertDialog.Builder builder =
+                new AlertDialog.Builder(MainActivity.this);
         builder.setMessage("GPS is disabled. Do you want to enable it?")
                 .setCancelable(false)
                 .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
@@ -496,7 +546,8 @@ public class MainActivity extends AppCompatActivity {
                         startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
                     }
                 })
-                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                .setNegativeButton("No",
+                        new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         dialog.cancel();
                     }
@@ -510,7 +561,8 @@ public class MainActivity extends AppCompatActivity {
 
         Log.d("Location","Checking Location permissions");
         return ActivityCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+                Manifest.permission.ACCESS_FINE_LOCATION) ==
+                PackageManager.PERMISSION_GRANTED;
     }
 
     @Override
