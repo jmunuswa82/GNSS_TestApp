@@ -1,4 +1,4 @@
-open-source global navigation satellite system (GNSS) testing app.
+open-source Global Navigation Satellite system (GNSS) testing app.
 
 Features
 It supports dual-frequency¹ GNSS for:
