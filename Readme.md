@@ -1,4 +1,4 @@
-open-source Global Navigation Satellite system (GNSS) testing app.
+Open-source Global Navigation Satellite system (GNSS) testing app.
 
 Features:
 
