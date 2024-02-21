@@ -72,7 +72,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
 
-
         //In First layout
         clearGPSButton = findViewById(R.id.clearGPSButton);
         startTTFFButton = findViewById(R.id.startTTFFButton);
@@ -80,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
         latTextview = findViewById(R.id.latTextview);
         longTextview = findViewById(R.id.longTextview);
         ttffTextview = findViewById(R.id.ttffTextview);
-        timeDelay  = findViewById(R.id.timeDelay);
+        timeDelay = findViewById(R.id.timeDelay);
         iterCount = findViewById(R.id.iterCount);
 
 
@@ -106,81 +105,83 @@ public class MainActivity extends AppCompatActivity {
         locationListener = new LocationListener() {
 
             public void onLocationChanged(Location location) {
-                // Extract location information
-                double latitude = location.getLatitude();
-                double longitude = location.getLongitude();
-                double altitude = location.getAltitude();
-                // Calculate TTFF
-                long currentTime = System.currentTimeMillis();
-                long ttff = (currentTime - startTime) / 1000;
-
-                // Get speed in meters per second
-                float speed = location.getSpeed();
-                // Get bearing in degrees clockwise from north
-                float bearing = location.getBearing();
-
-                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                    float speedAccuracy = location.getSpeedAccuracyMetersPerSecond();
-                    // Get the estimated accuracy
-                    float accuracy = location.getAccuracy();
-                    // Assuming that the accuracy value represents both position and bearing accuracy
-                    double bearingAccuracy = accuracy;
-
-
-                    // Check if the iteration count has changed
-                    if (iterationCount != previousIterationCount) {
-                        // Update the previous iteration count
-                        previousIterationCount = iterationCount;
-                        // Update UI elements
-                        updateUI(latitude, longitude, altitude, ttff, speed, bearing,speedAccuracy,bearingAccuracy);
-                        // Log information
-                        Log.d("TTFF", "Latitude: " + latitude);
-                        Log.d("TTFF", "Longitude: " + longitude);
-                        Log.d("TTFF", "Altitude: " + altitude);
-                        Log.d("TTFF", "TTFF: " + ttff + "s");
-                        Log.d("TTFF", "Speed:" + speed);
-                        Log.d("TTFF", "Bearing:" + bearing);
-                        Log.d("TTFF", "Speed Accuracy:" + speedAccuracy);
-                        Log.d("TTFF", "Bearing Accuracy:" + bearingAccuracy);
-
-                        Log.d("TTFF", "Iteration count: " + iterationCount);
-                    }
-                }
-
                 // Check request code
-                if (requestcode == LOCATION_PERMISSION_REQUEST_CODE && iterationCount > 0) {
-                    // Schedule next iteration after a delay
-                    displayTimeDelay();
-                    totalTTFF +=ttff;
-                    scheduleNextIteration();
+                if (requestcode == LOCATION_PERMISSION_REQUEST_CODE) {
+                    // Extract location information
+                    double latitude = location.getLatitude();
+                    double longitude = location.getLongitude();
+                    double altitude = location.getAltitude();
+                    // Get speed in meters per second
+                    float speed = location.getSpeed();
+                    // Get bearing in degrees clockwise from north
+                    float bearing = location.getBearing();
+
+                    // Calculate TTFF
+                    long currentTime = System.currentTimeMillis();
+                    long ttff = (currentTime - startTime) / 1000;
+                    if (ttff > 0) {
+
+                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                            float speedAccuracy = location.getSpeedAccuracyMetersPerSecond();
+                            // Get the estimated accuracy
+                            float accuracy = location.getAccuracy();
+                            // Assuming that the accuracy value represents both position and bearing accuracy
+                            double bearingAccuracy = accuracy;
+
+
+                            // Check if the iteration count has changed
+                            if (iterationCount != previousIterationCount) {
+                                // Update the previous iteration count
+                                previousIterationCount = iterationCount;
+                                // Update UI elements
+                                updateUI(latitude, longitude, altitude, ttff, speed, bearing, speedAccuracy, bearingAccuracy);
+                            }
+                        }
+                        // Schedule next iteration after a delay
+                        displayTimeDelay();
+                        totalTTFF += ttff;
+                        scheduleNextIteration();
+                    }
+
                 } else {
                     // Stop location updates
                     stopLocationUpdates();
                 }
             }
+
             private void stopLocationUpdates() {
+
                 locationManager.removeUpdates(this);
             }
 
             private void updateUI(double latitude, double longitude,
-                                  double altitude, long ttff,float speed,
+                                  double altitude, long ttff, float speed,
                                   float bearing, float speedAccuracy,
                                   double bearingAccuracy) {
                 runOnUiThread(() -> {
-                        latTextview.setText("Latitude: " + latitude);
-                        longTextview.setText("Longitude: " + longitude);
-                        altTextview.setText("" + altitude);
-                        ttffTextview.setText("TTFF: " + ttff + "s");
-                        speedTextview.setText(""+speed);
-                        bearingTextview.setText(""+bearing);
-                        sAccTextview.setText(""+speedAccuracy);
-                        bAccTextview.setText(""+bearingAccuracy);
+                    latTextview.setText("Latitude: " + latitude);
+                    longTextview.setText("Longitude: " + longitude);
+                    altTextview.setText("" + altitude);
+                    ttffTextview.setText("TTFF: " + ttff + "s");
+                    speedTextview.setText("" + speed);
+                    bearingTextview.setText("" + bearing);
+                    sAccTextview.setText("" + speedAccuracy);
+                    bAccTextview.setText("" + bearingAccuracy);
+                    iterCount.setText("IterCount: " + iterationCount);
 
-                        iterCount.setText("IterCount: " + iterationCount);
+                    // Log information
+                    Log.d("TTFF", "Latitude: " + latitude);
+                    Log.d("TTFF", "Longitude: " + longitude);
+                    Log.d("TTFF", "Altitude: " + altitude);
+                    Log.d("TTFF", "TTFF: " + ttff + "s");
+                    Log.d("TTFF", "Speed:" + speed);
+                    Log.d("TTFF", "Bearing:" + bearing);
+                    Log.d("TTFF", "Speed Accuracy:" + speedAccuracy);
+                    Log.d("TTFF", "Bearing Accuracy:" + bearingAccuracy);
+                    Log.d("TTFF", "Iteration count: " + iterationCount);
+
                 });
             }
-
-
 
 
             @Override
@@ -214,7 +215,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Toast.makeText(MainActivity.this,
                         "TTFF Start", Toast.LENGTH_SHORT).show();
-                Log.d("TTFF","start TTFF pressed");
+                Log.d("TTFF", "start TTFF pressed");
 
                 // Check for location permission
                 if (ContextCompat.checkSelfPermission(MainActivity.this,
@@ -238,7 +239,12 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onSatelliteStatusChanged(GnssStatus status) {
                 gnssStatus = status;
-                updateSatelliteInfo();
+                /**
+                 * to fetch the satellite information
+                 * @returns - ID, GNSS, CF, C/No, Flags, Elev, Azim
+                 */
+                Log.d("MainActivity", "calling the user library!");
+                SatelliteUtils.fetchSatelliteInfo(gnssStatus, satelliteTable);
             }
         };
 
@@ -251,7 +257,17 @@ public class MainActivity extends AppCompatActivity {
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                     REQUEST_LOCATION_PERMISSION);
         }
+
+        clearGPSButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Call clear function from SatelliteUtils
+                SatelliteUtils.clearGPSData(satelliteTable);
+                //clearGPSData(); // Call your existing clear function if needed
+            }
+        });
     }
+
     private void scheduleNextIteration() {
         // Schedule after 10 seconds
         handler.postDelayed(this::startNextIteration, 10000);
@@ -306,166 +322,7 @@ public class MainActivity extends AppCompatActivity {
         startNextIteration();
     }
 
-    private void updateSatelliteInfo() {
-        // Clear previous satellite information
-        satelliteTable.removeViews(1, satelliteTable.getChildCount() - 1);
 
-        // Iterate through each satellite
-        int satelliteCount = gnssStatus.getSatelliteCount();
-        for (int i = 0; i < satelliteCount; i++) {
-            // Retrieve satellite information
-            int prn = gnssStatus.getSvid(i);
-            int constellationType = gnssStatus.getConstellationType(i);
-            float cn0 = gnssStatus.getCn0DbHz(i);
-            float elevation = gnssStatus.getElevationDegrees(i);
-            float azimuth = gnssStatus.getAzimuthDegrees(i);
-
-            //flag status
-            String flagStatus = estimateFlagStatus(constellationType, cn0, elevation, azimuth);
-
-            if(elevation % 2 == 0) {
-                // Create a new TableRow to hold satellite data
-                TableRow satelliteRow = new TableRow(this);
-
-                // Create TextViews for satellite data
-                TextView idTextView = new TextView(this);
-                idTextView.setText(String.valueOf(prn));
-                satelliteRow.addView(idTextView);
-
-                TextView gnssTextView = new TextView(this);
-                gnssTextView.setText(getConstellationType(constellationType));
-                satelliteRow.addView(gnssTextView);
-
-                TextView cfTextView = new TextView(this);
-                // Display estimated CF value
-                cfTextView.setText(estimateCarrierFrequency(prn, constellationType));
-                satelliteRow.addView(cfTextView);
-
-
-                TextView cnoTextView = new TextView(this);
-                // Display C/No if available
-                cnoTextView.setText(cn0 > 0 ? String.valueOf(cn0) : "");
-                satelliteRow.addView(cnoTextView);
-
-                TextView flagStatusTextView = new TextView(this);
-                flagStatusTextView.setText(flagStatus);
-                satelliteRow.addView(flagStatusTextView);
-
-                TextView elevTextView = new TextView(this);
-                // Display elevation with "°" symbol
-                elevTextView.setText(String.valueOf(elevation) + "°");
-                satelliteRow.addView(elevTextView);
-
-                TextView azimTextView = new TextView(this);
-                // Display azimuth if available
-                azimTextView.setText(azimuth > 0 ? String.valueOf(azimuth) + "°" : "");
-                satelliteRow.addView(azimTextView);
-
-                // Add TableRow to TableLayout
-                satelliteTable.addView(satelliteRow);
-            }
-        }
-    }
-
-    private String estimateFlagStatus(int constellationType,
-                                      float cn0, float elevation, float azimuth) {
-        switch (constellationType) {
-            case GnssStatus.CONSTELLATION_GPS:
-                // For GPS, assume healthy if C/N0 > 40
-                // and elevation > 15 degrees
-                if (cn0 > 40 && elevation > 15) {
-                    return "A"; // "A" for healthy
-                } else {
-                    return "AE"; // "AE" for unhealthy
-                }
-            case GnssStatus.CONSTELLATION_GLONASS:
-                // For GLONASS, assume healthy if C/N0 > 35
-                // and elevation > 10 degrees
-                if (cn0 > 35 && elevation > 10) {
-                    return "A"; // "A" for healthy
-                } else {
-                    return "AE"; // "AE" for unhealthy
-                }
-            case GnssStatus.CONSTELLATION_BEIDOU:
-                // For BEIDOU, assume healthy if C/N0 > 38
-                // and azimuth between 30 and 330 degrees
-                if (cn0 > 38 && azimuth > 30 && azimuth < 330) {
-                    return "A"; // "A" for healthy
-                } else {
-                    return "AE"; // "AE" for unhealthy
-                }
-            case GnssStatus.CONSTELLATION_GALILEO:
-                // For GALILEO, assume healthy if C/N0 > 42 and elevation > 20 degrees
-                if (cn0 > 42 && elevation > 20) {
-                    return "A"; // "A" for healthy
-                } else {
-                    return "AE"; // "AE" for unhealthy
-                }
-            default:
-                // For other constellations,
-                // return "AU" for unknown health status
-                return "AU"; // "AU" for unknown health status
-        }
-    }
-
-
-
-
-    // Method to estimate CF value in terms of L1, L2, L5, etc.
-    // based on PRN and constellation type
-    private String estimateCarrierFrequency(int prn, int constellationType) {
-        // Define frequency bands for different constellations
-        String cf;
-        switch (constellationType) {
-            case GnssStatus.CONSTELLATION_GPS:
-                // For GPS, even PRN => L1, odd PRN => L2
-                cf = (prn % 2 == 0) ? "L1" : "L2";
-                break;
-            case GnssStatus.CONSTELLATION_GLONASS:
-                // For GLONASS, L1 = 1602 + 0.5625 * (prn - 64),
-                // L2 = 1246 + 0.4375 * (prn - 64)
-                cf = (prn > 64) ? "L1" : "L2";
-                break;
-            case GnssStatus.CONSTELLATION_GALILEO:
-                // For GALILEO, E1
-                cf = "E1";
-                break;
-            case GnssStatus.CONSTELLATION_BEIDOU:
-                // For BEIDOU, B1
-                cf = "B1";
-                break;
-            case GnssStatus.CONSTELLATION_QZSS:
-                // For QZSS, L1
-                cf = "L1";
-                break;
-            case GnssStatus.CONSTELLATION_SBAS:
-                // For SBAS, L1
-                cf = "L1";
-                break;
-            // Add cases for other constellations as needed
-            default:
-                cf = "Unknown";
-        }
-        return cf;
-    }
-
-
-    private String getConstellationType(int constellationType){
-        switch (constellationType){
-            case GnssStatus.CONSTELLATION_GPS:
-                return "GPS";
-            case GnssStatus.CONSTELLATION_GLONASS:
-                return "GLONASS";
-            case GnssStatus.CONSTELLATION_BEIDOU:
-                return "BEIDOU";
-            case GnssStatus.CONSTELLATION_GALILEO:
-                return "GALILEO";
-            case GnssStatus.CONSTELLATION_IRNSS:
-                return "IRNSS";
-            default:
-                return "UNKNOWN";
-        }
-    }
 
     @Override
     protected void onResume() {
@@ -486,10 +343,7 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected( MenuItem item) {
         switch (item.getItemId()) {
             case R.id.settings:
-               Log.d("Menu","Settings!");
-               Toast.makeText(this, "Settings!", Toast.LENGTH_LONG).show();
-
-
+                Log.d("Menu","Settings!");
                 break;
         }
         return super.onOptionsItemSelected(item);
@@ -548,10 +402,10 @@ public class MainActivity extends AppCompatActivity {
                 })
                 .setNegativeButton("No",
                         new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        dialog.cancel();
-                    }
-                });
+                            public void onClick(DialogInterface dialog, int id) {
+                                dialog.cancel();
+                            }
+                        });
 
         AlertDialog alert = builder.create();
         alert.show();
@@ -573,7 +427,7 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == REQUEST_LOCATION_PERMISSION) {
             if (grantResults.length > 0
                     && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                 requestcode = REQUEST_LOCATION_PERMISSION;
+                requestcode = REQUEST_LOCATION_PERMISSION;
                 Log.d("Location","Allow location permissions");
 
                 startLocationUpdates();
