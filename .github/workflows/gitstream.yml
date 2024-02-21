@@ -7,17 +7,8 @@ run-name: |
 on:
   workflow_dispatch:
     inputs:
-      client_payload:
-        description: The Client payload
-        required: true
       full_repository:
         description: the repository name include the owner in `owner/repo_name` format
-        required: true
-      head_ref:
-        description: the head sha
-        required: true
-      base_ref:
-        description: the base ref 
         required: true
       installation_id:
         description: the installation id
