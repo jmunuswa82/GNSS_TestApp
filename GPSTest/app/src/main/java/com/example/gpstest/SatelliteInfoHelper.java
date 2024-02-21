@@ -7,17 +7,25 @@ import android.widget.TableRow;
 import android.widget.TextView;
 
 public class SatelliteInfoHelper {
-    // Method to fetch satellite information
-
-    public static void updateSatelliteInfo(GnssStatus gnssStatus, TableLayout satelliteTable) {
+    /**
+     * Retrieves and displays satellite information in a table.
+     *
+     * @param gnssStatus     The GnssStatus object containing satellite information.
+     * @param satelliteTable The TableLayout where the satellite information will be displayed.
+     *                       The table should have at least one TableRow as its child, which serves as the header.
+     *                       The method will remove all existing rows from the table before adding new satellite data.
+     *                       Each satellite will be represented as a new TableRow in the table.
+     *                       The TableRow should contain TextViews to display satellite data.
+     */
+    public static void getSatelliteInfo(GnssStatus gnssStatus, TableLayout satelliteTable) {
         try {
-            Log.d("UPDATES", "Updating satellite information...");
+            Log.d("getSatelliteInfo", "getting satellite information...");
             // Clear previous satellite information
             satelliteTable.removeViews(1, satelliteTable.getChildCount() - 1);
 
             // Iterate through each satellite
             int satelliteCount = gnssStatus.getSatelliteCount();
-            Log.d("UPDATES", "Total satellites: " + satelliteCount);
+            Log.d("getSatelliteInfo", "Total satellites: " + satelliteCount);
 
             for (int i = 0; i < satelliteCount; i++) {
                 // Retrieve satellite information
@@ -74,7 +82,7 @@ public class SatelliteInfoHelper {
             }
         } catch (Exception e) {
             // Handle the exception here
-            Log.e("UPDATES", "Error updating satellite information: " + e.getMessage());
+            Log.e("getSatelliteInfo", "Error updating satellite information: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -148,11 +156,27 @@ public class SatelliteInfoHelper {
 
 
     /**
-     * Method to estimate CF value in terms of L1, L2, L5, etc.
-     * based on PRN and constellation type
+     * Estimates the carrier frequency band for a satellite based on its PRN (Pseudo Random Noise) and constellation type.
      *
-     * @returns types of signals
+     * @param prn              The Pseudo Random Noise (PRN) code of the satellite.
+     *                         This code uniquely identifies the satellite within its constellation.
+     * @param constellationType The constellation type of the satellite.
+     *                         Possible values:
+     *                         - GnssStatus.CONSTELLATION_GPS: GPS constellation.
+     *                         - GnssStatus.CONSTELLATION_GLONASS: GLONASS constellation.
+     *                         - GnssStatus.CONSTELLATION_GALILEO: Galileo constellation.
+     *                         - GnssStatus.CONSTELLATION_BEIDOU: BeiDou constellation.
+     *                         - GnssStatus.CONSTELLATION_QZSS: QZSS constellation.
+     *                         - GnssStatus.CONSTELLATION_SBAS: SBAS (Satellite-Based Augmentation System) constellation.
+     *                         - Add cases for other constellations as needed.
+     * @return The estimated carrier frequency band of the satellite:
+     *         - "L1" for the L1 frequency band.
+     *         - "L2" for the L2 frequency band.
+     *         - "E1" for the E1 frequency band.
+     *         - "B1" for the B1 frequency band.
+     *         - "Unknown" if the carrier frequency band cannot be determined or if the constellation type is unknown.
      */
+
     private static String estimateCarrierFrequency(int prn, int constellationType) {
         try {
             // Define frequency bands for different constellations
@@ -203,9 +227,25 @@ public class SatelliteInfoHelper {
     }
 
     /**
-     * @param constellationType
-     * @return the type of satellite
+     * Estimates the carrier frequency band for a satellite based on its PRN (Pseudo Random Noise) and constellation type.
+     *
+     * @param constellationType The constellation type of the satellite.
+     *                         Possible values:
+     *                         - GnssStatus.CONSTELLATION_GPS: GPS constellation.
+     *                         - GnssStatus.CONSTELLATION_GLONASS: GLONASS constellation.
+     *                         - GnssStatus.CONSTELLATION_GALILEO: Galileo constellation.
+     *                         - GnssStatus.CONSTELLATION_BEIDOU: BeiDou constellation.
+     *                         - GnssStatus.CONSTELLATION_IRNSS: Irnns constellation
+     *                         - Add cases for other constellations as needed.
+     * @return Constellation type
+     *          - "GPS" for GPS constellation type
+     *          - "GLONASS" for GPS constellation type
+     *          - "BEIDOU" for GPS constellation type
+     *          - "GALILEO" for GPS constellation type
+     *          - "IRNSS" for GPS constellation type
+     *          - "Unknown" if the constellation type cannot be determined or unknown.
      */
+
 
     private static String getConstellationType(int constellationType) {
         try {

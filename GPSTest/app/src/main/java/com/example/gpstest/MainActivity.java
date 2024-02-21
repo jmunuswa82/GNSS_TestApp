@@ -234,15 +234,23 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        /**
+         * Callback interface for receiving notifications when the status of GNSS satellites changes.
+         * An instance of this interface must be registered with the GNSS system to receive updates.
+         */
 
         gnssStatusCallback = new GnssStatus.Callback() {
+
+            /**
+             * Called when the status of GNSS satellites changes.
+             *
+             * @param status The GnssStatus object containing information about the current status of GNSS satellites.
+             *               This method delegates the task of processing the satellite status change to another class
+             *               (e.g., SatelliteUtils) to handle the retrieval and updating of satellite information in the UI.
+             */
             @Override
             public void onSatelliteStatusChanged(GnssStatus status) {
                 gnssStatus = status;
-                /**
-                 * to fetch the satellite information
-                 * @returns - ID, GNSS, CF, C/No, Flags, Elev, Azim
-                 */
                 Log.d("MainActivity", "calling the user library!");
                 SatelliteUtils.fetchSatelliteInfo(gnssStatus, satelliteTable);
             }
@@ -258,7 +266,17 @@ public class MainActivity extends AppCompatActivity {
                     REQUEST_LOCATION_PERMISSION);
         }
 
+        /**
+         * Interface definition for a callback to be invoked when a view is clicked.
+         */
         clearGPSButton.setOnClickListener(new View.OnClickListener() {
+            /**
+             * Called when a view has been clicked.
+             *
+             * @param v The view that was clicked.
+             *          This method delegates the task of clearing GPS data to another class (e.g., SatelliteUtils)
+             *          to handle the actual clearing of GPS data from the specified TableLayout.
+             */
             @Override
             public void onClick(View v) {
                 // Call clear function from SatelliteUtils
