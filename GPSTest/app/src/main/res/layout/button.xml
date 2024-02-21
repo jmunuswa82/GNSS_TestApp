@@ -43,13 +43,15 @@
                 android:text="Clear GPS"
                 android:textColor="@color/white" />
 
-            <Button
+            <ToggleButton
                 android:id="@+id/startTTFFButton"
                 android:layout_width="140dp"
                 android:layout_height="wrap_content"
                 android:layout_margin="10dp"
                 android:background="#FF184C47"
-                android:text="Start TTFF"
+                android:checked="false"
+                android:textOn="Start TTFF"
+                android:textOff="Stop TTFF"
                 android:textColor="@color/white" />
 
         </LinearLayout>
