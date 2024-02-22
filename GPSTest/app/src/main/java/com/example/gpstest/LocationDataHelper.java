@@ -22,29 +22,27 @@ import androidx.core.content.ContextCompat;
  */
 public class LocationDataHelper implements LocationListener {
 
+
+    private MainActivity mainActivity;
+
     private static final String TAG = "LocationDataHelper";
     private static final int REQUEST_LOCATION_PERMISSION = 123;
 
-    private Activity activity;
     private LocationManager locationManager;
     private long startTime;
-    private int fixCount;
 
     /**
      * Constructs a new LocationDataHelper object.
      *
-     * @param activity The activity to be associated with this helper.
+     * @param mainActivity The activity to be associated with this helper.
      * @throws Exception If an error occurs during initialization.
      */
-    public LocationDataHelper(Activity activity) throws Exception {
-        this.activity = activity;
+    public LocationDataHelper(MainActivity mainActivity) throws Exception {
+        this.mainActivity = mainActivity;
         try {
             // Initialize the location manager
-            locationManager = (LocationManager) activity.getSystemService(Activity.LOCATION_SERVICE);
-
-            // Record the start time and initialize fix count
-            startTime = System.currentTimeMillis();
-            fixCount = 0;
+            locationManager
+                    = (LocationManager) mainActivity.getSystemService(Activity.LOCATION_SERVICE);
         } catch (Exception e) {
             // Log any errors that occur during initialization
             Log.e(TAG, "Error getting location manager: " + e.getMessage());
@@ -62,17 +60,18 @@ public class LocationDataHelper implements LocationListener {
      */
     @Override
     public void onLocationChanged(Location location) {
-        try {
-            long currentTime = System.currentTimeMillis();
-            long ttff = currentTime - startTime;
-            Log.d(TAG, "TTFF for Fix " + (++fixCount) + ": " + ttff + " ms");
 
-            // Update start time for the next fix
-            startTime = System.currentTimeMillis();
+        TTFFTracker ttffTracker = new TTFFTracker(mainActivity);
+        try {
+            ttffTracker.processLocationUpdate(location, startTime);
         } catch (Exception e) {
-            Log.e(TAG, "Error handling location change: " + e.getMessage());
+            // Handle any exceptions that might occur during the method call
+            Log.e(TAG, "Error processing location update: " + e.getMessage());
         }
+        startTime = System.currentTimeMillis();
+
     }
+
 
     /**
      * Called when the status of the location provider changes.
@@ -125,17 +124,16 @@ public class LocationDataHelper implements LocationListener {
      *
      * @return True if location updates are successfully started, false otherwise.
      */
-    public boolean startLocationUpdates() {
+    public void startLocationUpdates() {
         try {
             // Check if location permission is granted
-            if (ContextCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_FINE_LOCATION)
+            if (ContextCompat.checkSelfPermission(mainActivity, Manifest.permission.ACCESS_FINE_LOCATION)
                     == PackageManager.PERMISSION_GRANTED) {
                 // Check if GPS provider is enabled
                 if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
                     // If GPS is not enabled, prompt user to enable it
                     showLocationSettingsDialog();
                     Log.d(TAG, "GPS provider is not enabled");
-                    return false;
                 } else {
                     // Record the start time
                     startTime = System.currentTimeMillis();
@@ -143,24 +141,20 @@ public class LocationDataHelper implements LocationListener {
                     locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
                             1000, 0, this);
                     Log.d(TAG, "Location updates started");
-                    return true;
                 }
             } else {
                 // Request location permission
-                ActivityCompat.requestPermissions(activity,
+                ActivityCompat.requestPermissions(mainActivity,
                         new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                         REQUEST_LOCATION_PERMISSION);
                 Log.d(TAG, "Location permission not granted");
-                return false;
             }
         } catch (SecurityException e) {
             // Handle permission denied exception
             Log.e(TAG, "Permission denied: " + e.getMessage());
-            return false;
         } catch (Exception e) {
             // Handle other exceptions
             Log.e(TAG, "Error starting location updates: " + e.getMessage());
-            return false;
         }
     }
 
@@ -191,7 +185,7 @@ public class LocationDataHelper implements LocationListener {
     private void showLocationSettingsDialog() {
         try {
             // Create a dialog builder instance
-            AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+            AlertDialog.Builder builder = new AlertDialog.Builder(mainActivity);
 
             // Set the message and button actions for the dialog
             builder.setMessage("GPS is disabled. Do you want to enable it?")
@@ -200,7 +194,7 @@ public class LocationDataHelper implements LocationListener {
                     .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
                             // Start the activity to open location settings
-                            activity.startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+                            mainActivity.startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
                         }
                     })
                     // Negative button action to cancel the dialog
@@ -214,6 +208,10 @@ public class LocationDataHelper implements LocationListener {
             // Create and display the dialog
             AlertDialog alert = builder.create();
             alert.show();
+
+            // Log that the dialog is being shown
+            Log.d(TAG, "Location settings dialog is shown.");
+
         } catch (Exception e) {
             // Log any errors that occur during the creation or display of the dialog
             Log.e(TAG, "Error showing location settings dialog: " + e.getMessage());
