@@ -42,7 +42,8 @@ public class LocationDataHelper implements LocationListener {
      * @param activity The activity to be associated with this helper.
      * @throws Exception If an error occurs during initialization.
      */
-    public LocationDataHelper(Activity activity, TextView latTextView, TextView longTextView) throws Exception {
+    public LocationDataHelper(Activity activity, TextView latTextView,
+                              TextView longTextView) throws Exception {
         this.activity = activity;
         try {
             // Store TextView objects
@@ -55,7 +56,8 @@ public class LocationDataHelper implements LocationListener {
 
 
             // Initialize the location manager
-            locationManager = (LocationManager) activity.getSystemService(Activity.LOCATION_SERVICE);
+            locationManager = (LocationManager) activity.getSystemService
+                    (Activity.LOCATION_SERVICE);
             if (locationManager == null) {
                 throw new IllegalStateException("Failed to retrieve LocationManager");
             }
@@ -127,7 +129,8 @@ public class LocationDataHelper implements LocationListener {
      * @param extras   Optional extras.
      */
     @Override
-    public void onStatusChanged(String provider, int status, Bundle extras) {
+    public void onStatusChanged(String provider,
+                                int status, Bundle extras) {
         try {
             Log.d(TAG,"status of the location provider changed");
         } catch (Exception e) {
@@ -146,7 +149,8 @@ public class LocationDataHelper implements LocationListener {
             Log.d(TAG,"Location provider enabled");
 
         } catch (Exception e) {
-            Log.e(TAG, "Error handling provider enabled event: " + e.getMessage());
+            Log.e(TAG, "Error handling provider enabled event: "
+                    + e.getMessage());
         }
     }
 
@@ -160,7 +164,8 @@ public class LocationDataHelper implements LocationListener {
         try {
             Log.d(TAG,"Location provider disabled");
         } catch (Exception e) {
-            Log.e(TAG, "Error handling provider disabled event: " + e.getMessage());
+            Log.e(TAG, "Error handling provider disabled event: "
+                    + e.getMessage());
         }
     }
 
@@ -168,12 +173,14 @@ public class LocationDataHelper implements LocationListener {
     /**
      * Starts location updates.
      *
-     * @return True if location updates are successfully started, false otherwise.
+     * @return True if location updates are
+     * successfully started, false otherwise.
      */
     public boolean startLocationUpdates() {
         try {
             // Check if location permission is granted
-            if (ContextCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_FINE_LOCATION)
+            if (ContextCompat.checkSelfPermission(activity,
+                    Manifest.permission.ACCESS_FINE_LOCATION)
                     == PackageManager.PERMISSION_GRANTED) {
                 // Check if GPS provider is enabled
                 if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
@@ -245,7 +252,8 @@ public class LocationDataHelper implements LocationListener {
                     .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
                             // Start the activity to open location settings
-                            activity.startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+                            activity.startActivity(new Intent
+                                    (Settings.ACTION_LOCATION_SOURCE_SETTINGS));
                         }
                     })
                     // Negative button action to cancel the dialog

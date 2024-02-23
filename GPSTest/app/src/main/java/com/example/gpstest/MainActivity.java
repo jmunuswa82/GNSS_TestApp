@@ -28,7 +28,8 @@ public class MainActivity extends AppCompatActivity {
 
     private ToggleButton startGPSButton,startTTFFButton;
     private Button clearGPSButton;
-    private TextView latTextview, longTextview, ttffTextview, iterCount, timeDelay;
+    private TextView latTextview, longTextview, ttffTextview,
+            iterCount, timeDelay;
     private TextView altTextview, ehvTextview,
             altMslTextview, satsTextview,
             speedTextview, bearingTextview, sAccTextview,
@@ -43,7 +44,8 @@ public class MainActivity extends AppCompatActivity {
     private LocationDataHelper locationDataHelper;
 
     /**
-     * Called when the activity is created. Initializes UI elements and sets up event listeners.
+     * Called when the activity is created.
+     * Initializes UI elements and sets up event listeners.
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,10 +82,12 @@ public class MainActivity extends AppCompatActivity {
         satelliteTable = findViewById(R.id.satelliteTable);
         try {
             // Pass satelliteTable to LocationDataHelper constructor
-            locationDataHelper = new LocationDataHelper(this, latTextview, longTextview);
+            locationDataHelper = new LocationDataHelper(this,
+                    latTextview, longTextview);
         } catch (Exception e) {
             // Handle exception gracefully
-            Log.e(TAG, "Error initializing LocationDataHelper: " + e.getMessage());
+            Log.e(TAG, "Error initializing " +
+                    "LocationDataHelper: " + e.getMessage());
             e.printStackTrace();
         }
 
@@ -147,16 +151,20 @@ public class MainActivity extends AppCompatActivity {
         });
 
         /**
-         * Callback method to receive notifications when the status of GNSS satellites changes.
+         * Callback method to receive notifications
+         * when the status of GNSS satellites changes.
          */
         gnssStatusCallback = new GnssStatus.Callback() {
 
             /**
              * Called when the status of GNSS satellites changes.
              *
-             * @param status The GnssStatus object containing information about the current status of GNSS satellites.
-             *               This method delegates the task of processing the satellite status change to another class
-             *               (e.g., SatelliteUtils) to handle the retrieval and updating of satellite information in the UI.
+             * @param status The GnssStatus object containing information
+             *               about the current status of GNSS satellites.
+             *               This method delegates the task of processing
+             *               the satellite status change to another class
+             *               (e.g., SatelliteUtils) to handle the retrieval
+             *               and updating of satellite information in the UI.
              */
             @Override
             public void onSatelliteStatusChanged(GnssStatus status) {
@@ -181,16 +189,19 @@ public class MainActivity extends AppCompatActivity {
          * Called when a view has been clicked.
          *
          * @param v The view that was clicked.
-         *          This method delegates the task of clearing GPS data to another class (e.g., SatelliteUtils)
-         *          to handle the actual clearing of GPS data from the specified TableLayout.
+         *          This method delegates the task of clearing GPS data
+         *          to another class (e.g., SatelliteUtils)
+         *          to handle the actual clearing of GPS data from the
+         *          specified TableLayout.
          */
         clearGPSButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // Define an array containing all TextViews that display GPS data
-                TextView[] textViewArray = {latTextview, longTextview, ttffTextview, iterCount, timeDelay, altTextview, ehvTextview,
-                        altMslTextview, satsTextview, speedTextview, bearingTextview, sAccTextview, bAccTextview,
-                        pDopTextview, hvDopTextview};
+                TextView[] textViewArray = {latTextview, longTextview,
+                        ttffTextview, iterCount, timeDelay, altTextview, ehvTextview,
+                        altMslTextview, satsTextview, speedTextview, bearingTextview,
+                        sAccTextview, bAccTextview, pDopTextview, hvDopTextview};
 
                 // Call SatelliteUtils.clearGPSData with the array
                 SatelliteUtils.clearGPSData(satelliteTable, textViewArray);
@@ -213,7 +224,8 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Checks if the location permission is granted.
      *
-     * @return True if the location permission is granted, false otherwise.
+     * @return True if the location permission is
+     * granted, false otherwise.
      */
     private boolean checkLocationPermission() {
 
@@ -224,17 +236,23 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Handles the result of the permission request for accessing location.
+     * Handles the result of the permission request for
+     * accessing location.
      *
-     * @param requestCode  The request code passed to requestPermissions().
-     * @param permissions  The requested permissions. This is the same as the permissions array passed to requestPermissions().
-     * @param grantResults The grant results for the corresponding permissions, which is either PERMISSION_GRANTED or PERMISSION_DENIED.
+     * @param requestCode  The request code passed
+     *                     to requestPermissions().
+     * @param permissions  The requested permissions.
+     *                     This is the same as the permissions
+     *                     array passed to requestPermissions().
+     * @param grantResults The grant results for the corresponding
+     *                    permissions, which is either
+     *                     PERMISSION_GRANTED or PERMISSION_DENIED.
      */
     @Override
     public void onRequestPermissionsResult(int requestCode,
-                                            String[] permissions,
-                                            int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+                                           String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode,
+                permissions, grantResults);
         if (requestCode == REQUEST_LOCATION_PERMISSION) {
             if (grantResults.length > 0
                     && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -249,7 +267,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Called when the activity is resumed. Registers the GNSS status callback if location permission is granted.
+     * Called when the activity is resumed.
+     * Registers the GNSS status callback if
+     * location permission is granted.
      */
     @Override
     protected void onResume() {
@@ -260,7 +280,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Called when the activity is being destroyed. Stops location updates and logs a message.
+     * Called when the activity is being destroyed.
+     * Stops location updates and logs a message.
      */
     @Override
     protected void onDestroy() {
