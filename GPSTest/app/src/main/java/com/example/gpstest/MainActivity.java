@@ -5,6 +5,7 @@ import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.GnssStatus;
+import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
@@ -41,23 +42,15 @@ public class MainActivity extends AppCompatActivity {
     private static final int NUM_FIXES = 100;
     private LocationDataHelper locationDataHelper;
 
+    /**
+     * Called when the activity is created. Initializes UI elements and sets up event listeners.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
-        try {
-            // Attempt to create a new LocationDataHelper instance
-            locationDataHelper = new LocationDataHelper(this);
-        } catch (Exception e) {
-            // If an exception occurs during initialization,
-            // log the error and throw a RuntimeException
-            Log.e(TAG, "Error initializing LocationDataHelper: " + e.getMessage());
-            throw new RuntimeException(e);
-        }
-
-        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+       locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
 
         //In First layout
@@ -83,19 +76,61 @@ public class MainActivity extends AppCompatActivity {
         pDopTextview = findViewById(R.id.pDopTextview);
         hvDopTextview = findViewById(R.id.hvDopTextview);
 
-        //Third Layout
+        // Get references to satelliteTable
         satelliteTable = findViewById(R.id.satelliteTable);
+        try {
+            // Pass satelliteTable to LocationDataHelper constructor
+            locationDataHelper = new LocationDataHelper(this, latTextview, longTextview);
+        } catch (Exception e) {
+            // Handle exception gracefully
+            Log.e(TAG, "Error initializing LocationDataHelper: " + e.getMessage());
+            e.printStackTrace();
+        }
+
 
         startGPSButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (startGPSButton.isChecked()) {
-                    locationDataHelper.startLocationUpdates();
+                    // Start location updates
+                    boolean started = locationDataHelper.startLocationUpdates();
+                    if (started) {
+                        // Location updates started successfully
+                        // Now, check if permission is granted
+                        if (checkLocationPermission()) {
+                            // Permission granted, attempt to get last known location
+                            try {
+                                Location lastKnownLocation = locationManager.
+                                        getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                                if (lastKnownLocation != null) {
+                                    // Last known location available, update UI
+                                    double latitude = lastKnownLocation.getLatitude();
+                                    double longitude = lastKnownLocation.getLongitude();
+                                    latTextview.setText("Latitude: " + latitude);
+                                    longTextview.setText("Longitude: " + longitude);
+                                    // Update satellite details
+                                    updateSatelliteDetails();
+                                }
+
+                            } catch (SecurityException e) {
+                                // Handle SecurityException
+                                Log.e(TAG, "SecurityException: " + e.getMessage());
+                            }
+
+                        } else {
+                            // Permission not granted, request it
+                            ActivityCompat.requestPermissions(MainActivity.this,
+                                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                                    REQUEST_LOCATION_PERMISSION);
+                        }
+                    }
                 } else {
+                    // Stop location updates
                     locationDataHelper.stopLocationUpdates();
                 }
             }
         });
+
 
         startTTFFButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -112,10 +147,8 @@ public class MainActivity extends AppCompatActivity {
         });
 
         /**
-         * Callback interface for receiving notifications when the status of GNSS satellites changes.
-         * An instance of this interface must be registered with the GNSS system to receive updates.
+         * Callback method to receive notifications when the status of GNSS satellites changes.
          */
-
         gnssStatusCallback = new GnssStatus.Callback() {
 
             /**
@@ -127,9 +160,10 @@ public class MainActivity extends AppCompatActivity {
              */
             @Override
             public void onSatelliteStatusChanged(GnssStatus status) {
+                super.onSatelliteStatusChanged(status);
                 gnssStatus = status;
-                Log.d("MainActivity", "calling the user library!");
-                SatelliteUtils.fetchSatelliteInfo(gnssStatus, satelliteTable);
+                // Call method to update satellite details
+                //updateSatelliteDetails();
             }
         };
 
@@ -144,25 +178,43 @@ public class MainActivity extends AppCompatActivity {
         }
 
         /**
-         * Interface definition for a callback to be invoked when a view is clicked.
+         * Called when a view has been clicked.
+         *
+         * @param v The view that was clicked.
+         *          This method delegates the task of clearing GPS data to another class (e.g., SatelliteUtils)
+         *          to handle the actual clearing of GPS data from the specified TableLayout.
          */
-            /**
-             * Called when a view has been clicked.
-             *
-             * @param v The view that was clicked.
-             *          This method delegates the task of clearing GPS data to another class (e.g., SatelliteUtils)
-             *          to handle the actual clearing of GPS data from the specified TableLayout.
-             */
-        /*clearGPSButton.setOnClickListener(new View.OnClickListener() {
+        clearGPSButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Call clear function from SatelliteUtils
-                SatelliteUtils.clearGPSData(satelliteTable);
+                // Define an array containing all TextViews that display GPS data
+                TextView[] textViewArray = {latTextview, longTextview, ttffTextview, iterCount, timeDelay, altTextview, ehvTextview,
+                        altMslTextview, satsTextview, speedTextview, bearingTextview, sAccTextview, bAccTextview,
+                        pDopTextview, hvDopTextview};
+
+                // Call SatelliteUtils.clearGPSData with the array
+                SatelliteUtils.clearGPSData(satelliteTable, textViewArray);
                 //clearGPSData(); // Call your existing clear function if needed
             }
-        });*/
+        });
     }
 
+    /**
+     * Updates satellite details if GNSS status is available.
+     */
+    private void updateSatelliteDetails() {
+        if (gnssStatus != null) {
+            SatelliteUtils.fetchSatelliteInfo(gnssStatus, satelliteTable);
+        } else {
+            Log.e(TAG, "GNSS status is null");
+        }
+    }
+
+    /**
+     * Checks if the location permission is granted.
+     *
+     * @return True if the location permission is granted, false otherwise.
+     */
     private boolean checkLocationPermission() {
 
         Log.d("Location","Checking Location permissions");
@@ -171,6 +223,13 @@ public class MainActivity extends AppCompatActivity {
                 PackageManager.PERMISSION_GRANTED;
     }
 
+    /**
+     * Handles the result of the permission request for accessing location.
+     *
+     * @param requestCode  The request code passed to requestPermissions().
+     * @param permissions  The requested permissions. This is the same as the permissions array passed to requestPermissions().
+     * @param grantResults The grant results for the corresponding permissions, which is either PERMISSION_GRANTED or PERMISSION_DENIED.
+     */
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                             String[] permissions,
@@ -188,6 +247,10 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+
+    /**
+     * Called when the activity is resumed. Registers the GNSS status callback if location permission is granted.
+     */
     @Override
     protected void onResume() {
         super.onResume();
@@ -196,7 +259,9 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
+    /**
+     * Called when the activity is being destroyed. Stops location updates and logs a message.
+     */
     @Override
     protected void onDestroy() {
         super.onDestroy();

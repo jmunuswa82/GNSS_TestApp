@@ -11,6 +11,8 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
+import android.widget.TableLayout;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
@@ -25,10 +27,14 @@ public class LocationDataHelper implements LocationListener {
     private static final String TAG = "LocationDataHelper";
     private static final int REQUEST_LOCATION_PERMISSION = 123;
 
-    private Activity activity;
-    private LocationManager locationManager;
-    private long startTime;
+    private static Activity activity;
+    private static LocationManager locationManager;
+    private static long startTime;
     private int fixCount;
+    // New TextView variables for latitude and longitude
+    private TextView latTextView;
+    private TextView longTextView;
+    private TableLayout satelliteTable;
 
     /**
      * Constructs a new LocationDataHelper object.
@@ -36,15 +42,33 @@ public class LocationDataHelper implements LocationListener {
      * @param activity The activity to be associated with this helper.
      * @throws Exception If an error occurs during initialization.
      */
-    public LocationDataHelper(Activity activity) throws Exception {
+    public LocationDataHelper(Activity activity, TextView latTextView, TextView longTextView) throws Exception {
         this.activity = activity;
         try {
+            // Store TextView objects
+            if (latTextView != null && longTextView != null) {
+                this.latTextView = latTextView;
+                this.longTextView = longTextView;
+            } else {
+                throw new IllegalArgumentException("TextView objects cannot be null");
+            }
+
+
             // Initialize the location manager
             locationManager = (LocationManager) activity.getSystemService(Activity.LOCATION_SERVICE);
+            if (locationManager == null) {
+                throw new IllegalStateException("Failed to retrieve LocationManager");
+            }
 
             // Record the start time and initialize fix count
             startTime = System.currentTimeMillis();
             fixCount = 0;
+            // Initialize satelliteTable
+            satelliteTable = activity.findViewById(R.id.satelliteTable);
+            if (satelliteTable == null) {
+                throw new IllegalStateException("Failed to retrieve satelliteTable");
+            }
+
         } catch (Exception e) {
             // Log any errors that occur during initialization
             Log.e(TAG, "Error getting location manager: " + e.getMessage());
@@ -63,6 +87,27 @@ public class LocationDataHelper implements LocationListener {
     @Override
     public void onLocationChanged(Location location) {
         try {
+
+            // Extract latitude and longitude from the Location object
+            double latitude = location.getLatitude();
+            double longitude = location.getLongitude();
+
+            // Update UI elements with latitude and longitude
+            activity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    latTextView.setText("Latitude: " + latitude);
+                    longTextView.setText("Longitude: " + longitude);
+                }
+            });
+
+            // Log the latitude and longitude
+            Log.d(TAG, "Latitude: " + latitude + ", Longitude: " + longitude);
+
+            // You can also update UI elements with the latitude and longitude here if needed
+            // For example:
+            // latTextview.setText("Latitude: " + latitude);
+            // longTextview.setText("Longitude: " + longitude);
             long currentTime = System.currentTimeMillis();
             long ttff = currentTime - startTime;
             Log.d(TAG, "TTFF for Fix " + (++fixCount) + ": " + ttff + " ms");
@@ -188,7 +233,7 @@ public class LocationDataHelper implements LocationListener {
     /**
      * Shows a dialog to prompt the user to enable location settings.
      */
-    private void showLocationSettingsDialog() {
+    private static void showLocationSettingsDialog() {
         try {
             // Create a dialog builder instance
             AlertDialog.Builder builder = new AlertDialog.Builder(activity);

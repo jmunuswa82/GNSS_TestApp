@@ -52,13 +52,14 @@ public class SatelliteInfoHelper {
                     satelliteRow.addView(gnssTextView);
 
                     TextView cfTextView = new TextView(satelliteTable.getContext());
-                    // Display estimated CF value
-                    cfTextView.setText(estimateCarrierFrequency(prn, constellationType));
+                    // Display estimated CF value if available, otherwise display blank space
+                    cfTextView.setText(estimateCarrierFrequency(prn, constellationType) != null ?
+                            estimateCarrierFrequency(prn, constellationType) : "");
                     satelliteRow.addView(cfTextView);
 
 
                     TextView cnoTextView = new TextView(satelliteTable.getContext());
-                    // Display C/No if available
+                    // Display C/No if available, otherwise display blank space
                     cnoTextView.setText(cn0 > 0 ? String.valueOf(cn0) : "");
                     satelliteRow.addView(cnoTextView);
 
@@ -67,12 +68,12 @@ public class SatelliteInfoHelper {
                     satelliteRow.addView(flagStatusTextView);
 
                     TextView elevTextView = new TextView(satelliteTable.getContext());
-                    // Display elevation with "°" symbol
-                    elevTextView.setText(String.valueOf(elevation) + "°");
+                    // Display elevation with "°" symbol if available, otherwise display blank space
+                    elevTextView.setText(elevation > 0 ? String.valueOf(elevation) + "°" : "");
                     satelliteRow.addView(elevTextView);
 
                     TextView azimTextView = new TextView(satelliteTable.getContext());
-                    // Display azimuth if available
+                    // Display azimuth with "°" symbol if available, otherwise display blank space
                     azimTextView.setText(azimuth > 0 ? String.valueOf(azimuth) + "°" : "");
                     satelliteRow.addView(azimTextView);
 
@@ -245,8 +246,6 @@ public class SatelliteInfoHelper {
      *          - "IRNSS" for GPS constellation type
      *          - "Unknown" if the constellation type cannot be determined or unknown.
      */
-
-
     private static String getConstellationType(int constellationType) {
         try {
             switch (constellationType) {

@@ -3,7 +3,6 @@ package com.example.gpstest;
 import android.location.GnssStatus;
 import android.util.Log;
 import android.widget.TableLayout;
-import android.widget.TableRow;
 import android.widget.TextView;
 
 /**
@@ -36,11 +35,13 @@ public class SatelliteUtils {
      *                       the actual clearing of GPS data.
      */
 
-    public static void clearGPSData(TableLayout satelliteTable) {
+    public static void clearGPSData(TableLayout satelliteTable, TextView[] textViewArray) {
         // Call clear function from ClearGPS
         Log.d("SatelliteUtil", "Calling the sub File ClearGPS");
-        ClearGPS.clearGPSData(satelliteTable);
+        ClearGPS.clearGPSData(satelliteTable, textViewArray);
     }
+
+
 }
 
 
