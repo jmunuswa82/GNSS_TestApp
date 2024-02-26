@@ -54,16 +54,28 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        
+
         try {
             // Pass satelliteTable to LocationDataHelper constructor
             locationDataHelper = new LocationDataHelper(this);
         } catch (Exception e) {
             // Handle exception gracefully
-            Log.e(TAG, "Error initializing " +
-                    "LocationDataHelper: " + e.getMessage());
+            Log.e(TAG, "Error initializing LocationDataHelper: " + e.getMessage());
             e.printStackTrace();
         }
-        ttffTracker = new TTFFTracker(this);
+
+        try {
+            // Create a new instance of TTFFTracker
+            ttffTracker = new TTFFTracker(this);
+        } catch (Exception e) {
+            // Handle exception gracefully
+            Log.e(TAG, "Error creating TTFFTracker: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+
+
 
         //In First layout
         clearGPSButton = findViewById(R.id.clearGPSButton);
@@ -129,19 +141,44 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
+        /**
+         * Set an OnClickListener to handle click events for the start/stop TTFF button.
+         * This method allows users to start or stop location updates by clicking the button.
+         *
+         * @param listener The OnClickListener to be set for the start/stop TTFF button.
+         */
         startTTFFButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                try {
+                    // Documentation log
+                    Log.d(TAG, "Start/Stop TTFF Button Clicked");
 
-                if (startTTFFButton.isChecked())
-                {
-                    locationDataHelper.startLocationUpdates();
-                } else {
-                    locationDataHelper.stopLocationUpdates();
+                    // Toggle location updates based on button state
+                    if (startTTFFButton.isChecked()) {
+                        try {
+                            locationDataHelper.startLocationUpdates();
+                            Log.d(TAG, "Location updates stopped.");
+
+                        } catch (Exception e) {
+                            // Handle any exceptions that might occur
+                            // while starting location updates
+                            Log.e(TAG, "Error starting location updates: " + e.getMessage());
+                            e.printStackTrace();
+                        }
+                        Log.d(TAG, "Location updates started.");
+                    } else {
+                        locationDataHelper.stopLocationUpdates();
+                        Log.d(TAG, "Location updates stopped.");
+                    }
+                } catch (Exception e) {
+                    // Handle any exceptions that might occur
+                    Log.e(TAG, "Error toggling location updates: " + e.getMessage());
+                    e.printStackTrace();
                 }
-
             }
         });
+
 
         /**
          * Callback method to receive notifications
@@ -245,19 +282,36 @@ public class MainActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode,
                                            @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode,
-                permissions, grantResults);
-        if (requestCode == REQUEST_LOCATION_PERMISSION) {
-            if (grantResults.length > 0
-                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Log.d("Location","Allow location permissions");
-               locationDataHelper.startLocationUpdates();
-            } else {
-                Toast.makeText(this,
-                        "Location permission denied", Toast.LENGTH_SHORT).show();
+        // Call the super method to ensure that the base class's implementation of
+        // onRequestPermissionsResult is executed
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        try {
+            // Check if the request code matches the location permission request code
+            if (requestCode == REQUEST_LOCATION_PERMISSION) {
+                // Check if the grantResults array is not empty
+                // and the first permission is granted
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // Log a message indicating that location permissions are allowed
+                    Log.d("Location", "Allow location permissions");
+                    // Start location updates if permission is granted
+                    locationDataHelper.startLocationUpdates();
+                } else {
+                    // If permission is denied, display a toast message informing the user
+                    Toast.makeText(this,
+                            "Location permission denied", Toast.LENGTH_SHORT).show();
+                }
             }
+        } catch (Exception e) {
+            // Handle any exceptions that might occur during
+            // the execution of onRequestPermissionsResult()
+            Log.e(TAG, "Error in onRequestPermissionsResult(): " + e.getMessage());
+            e.printStackTrace();
         }
     }
+
+
 
     /**
      * Called when the activity is resumed.
@@ -266,11 +320,28 @@ public class MainActivity extends AppCompatActivity {
      */
     @Override
     protected void onResume() {
+        // Call the super method to ensure that the base class's
+        // onResume() implementation is executed
         super.onResume();
-        if (checkLocationPermission()) {
-            locationManager.registerGnssStatusCallback(gnssStatusCallback);
+
+        try {
+            // Check if location permission is granted
+            if (checkLocationPermission()) {
+                // If permission is granted, register the GNSS status callback
+                locationManager.registerGnssStatusCallback(gnssStatusCallback);
+                Log.d(TAG, "GNSS status callback registered.");
+            }
+        } catch (SecurityException e) {
+            // Handle the case where permission is not granted
+            Log.e(TAG, "Error registering GNSS status callback: " + e.getMessage());
+            e.printStackTrace();
+        } catch (Exception e) {
+            // Handle other exceptions that might occur
+            Log.e(TAG, "Unexpected error in onResume(): " + e.getMessage());
+            e.printStackTrace();
         }
     }
+
 
     /**
      * Called when the activity is being destroyed.
@@ -278,8 +349,21 @@ public class MainActivity extends AppCompatActivity {
      */
     @Override
     protected void onDestroy() {
+        // Call the super method to ensure that the base class's onDestroy() implementation is executed
         super.onDestroy();
-        Log.d("Location","Location updates Stopped!");
-        locationDataHelper.stopLocationUpdates();
+
+        try {
+            // Log a message indicating that location updates are stopped
+            Log.d("Location", "Location updates Stopped!");
+
+            // Stop location updates using the locationDataHelper
+            locationDataHelper.stopLocationUpdates();
+        } catch (Exception e) {
+            // Handle any exceptions that might occur during the execution of onDestroy()
+            Log.e("MyApp", "Error in onDestroy(): " + e.getMessage());
+            e.printStackTrace();
+            // You might also want to display a toast or some UI indication for the user
+        }
     }
+
 }
