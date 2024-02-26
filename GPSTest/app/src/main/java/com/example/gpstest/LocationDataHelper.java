@@ -27,50 +27,26 @@ public class LocationDataHelper implements LocationListener {
     private static final String TAG = "LocationDataHelper";
     private static final int REQUEST_LOCATION_PERMISSION = 123;
 
-    private static Activity activity;
-    private static LocationManager locationManager;
-    private static long startTime;
-    private int fixCount;
-    // New TextView variables for latitude and longitude
-    private TextView latTextView;
-    private TextView longTextView;
+    private long startTime;
+    private MainActivity mainActivity;
+    private LocationManager locationManager;
     private TableLayout satelliteTable;
+    TTFFTracker ttffTracker;
+    private long iterCount = 0;
+    TextView itercount;
 
     /**
      * Constructs a new LocationDataHelper object.
      *
-     * @param activity The activity to be associated with this helper.
+     * @param mainActivity The activity to be associated with this helper.
      * @throws Exception If an error occurs during initialization.
      */
-    public LocationDataHelper(Activity activity, TextView latTextView,
-                              TextView longTextView) throws Exception {
-        this.activity = activity;
+    public LocationDataHelper(MainActivity mainActivity) throws Exception {
+        this.mainActivity = mainActivity;
         try {
-            // Store TextView objects
-            if (latTextView != null && longTextView != null) {
-                this.latTextView = latTextView;
-                this.longTextView = longTextView;
-            } else {
-                throw new IllegalArgumentException("TextView objects cannot be null");
-            }
-
-
             // Initialize the location manager
-            locationManager = (LocationManager) activity.getSystemService
-                    (Activity.LOCATION_SERVICE);
-            if (locationManager == null) {
-                throw new IllegalStateException("Failed to retrieve LocationManager");
-            }
-
-            // Record the start time and initialize fix count
-            startTime = System.currentTimeMillis();
-            fixCount = 0;
-            // Initialize satelliteTable
-            satelliteTable = activity.findViewById(R.id.satelliteTable);
-            if (satelliteTable == null) {
-                throw new IllegalStateException("Failed to retrieve satelliteTable");
-            }
-
+            locationManager
+                    = (LocationManager) mainActivity.getSystemService(Activity.LOCATION_SERVICE);
         } catch (Exception e) {
             // Log any errors that occur during initialization
             Log.e(TAG, "Error getting location manager: " + e.getMessage());
@@ -78,48 +54,40 @@ public class LocationDataHelper implements LocationListener {
             // Throw an exception to indicate initialization failure
             throw new Exception("Error initializing LocationDataHelper", e);
         }
+        // Initialize satelliteTable
+        satelliteTable = mainActivity.findViewById(R.id.satelliteTable);
+        if (satelliteTable == null) {
+            throw new IllegalStateException("Failed to retrieve satelliteTable");
+        }
+
+        itercount = mainActivity.findViewById(R.id.iterCount);
+        if (itercount == null) {
+            throw new IllegalStateException("Failed to retrieve iterCount");
+        }
     }
 
 
     /**
      * Called when the location has changed.
+     * This method handles new location updates by passing the location and update time to
+     * the method responsible for processing the update.
      *
      * @param location The new location.
      */
     @Override
     public void onLocationChanged(Location location) {
         try {
+            // Get the time of the new location update
+            long updateTime = System.currentTimeMillis();
 
-            // Extract latitude and longitude from the Location object
-            double latitude = location.getLatitude();
-            double longitude = location.getLongitude();
-
-            // Update UI elements with latitude and longitude
-            activity.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    latTextView.setText("Latitude: " + latitude);
-                    longTextView.setText("Longitude: " + longitude);
-                }
-            });
-
-            // Log the latitude and longitude
-            Log.d(TAG, "Latitude: " + latitude + ", Longitude: " + longitude);
-
-            // You can also update UI elements with the latitude and longitude here if needed
-            // For example:
-            // latTextview.setText("Latitude: " + latitude);
-            // longTextview.setText("Longitude: " + longitude);
-            long currentTime = System.currentTimeMillis();
-            long ttff = currentTime - startTime;
-            Log.d(TAG, "TTFF for Fix " + (++fixCount) + ": " + ttff + " ms");
-
-            // Update start time for the next fix
-            startTime = System.currentTimeMillis();
+            // Pass the location and update time to the method handling the new location update
+            handleNewLocationUpdate(location, updateTime);
         } catch (Exception e) {
-            Log.e(TAG, "Error handling location change: " + e.getMessage());
+            // Log any exceptions that occur during the handling of location updates
+            Log.e(TAG, "Error handling location update: " + e.getMessage());
         }
     }
+
 
     /**
      * Called when the status of the location provider changes.
@@ -132,7 +100,7 @@ public class LocationDataHelper implements LocationListener {
     public void onStatusChanged(String provider,
                                 int status, Bundle extras) {
         try {
-            Log.d(TAG,"status of the location provider changed");
+            Log.d(TAG, "status of the location provider changed");
         } catch (Exception e) {
             Log.e(TAG, "Error handling status change: " + e.getMessage());
         }
@@ -146,7 +114,7 @@ public class LocationDataHelper implements LocationListener {
     @Override
     public void onProviderEnabled(String provider) {
         try {
-            Log.d(TAG,"Location provider enabled");
+            Log.d(TAG, "Location provider enabled");
 
         } catch (Exception e) {
             Log.e(TAG, "Error handling provider enabled event: "
@@ -162,7 +130,7 @@ public class LocationDataHelper implements LocationListener {
     @Override
     public void onProviderDisabled(String provider) {
         try {
-            Log.d(TAG,"Location provider disabled");
+            Log.d(TAG, "Location provider disabled");
         } catch (Exception e) {
             Log.e(TAG, "Error handling provider disabled event: "
                     + e.getMessage());
@@ -172,14 +140,15 @@ public class LocationDataHelper implements LocationListener {
 
     /**
      * Starts location updates.
-     *
-     * @return True if location updates are
-     * successfully started, false otherwise.
+     * This method requests location updates from the GPS provider and handles permission checks.
      */
-    public boolean startLocationUpdates() {
+    public void startLocationUpdates() {
         try {
+            // Set startTime just before requesting location updates
+            startTime = System.currentTimeMillis();
+
             // Check if location permission is granted
-            if (ContextCompat.checkSelfPermission(activity,
+            if (ContextCompat.checkSelfPermission(mainActivity,
                     Manifest.permission.ACCESS_FINE_LOCATION)
                     == PackageManager.PERMISSION_GRANTED) {
                 // Check if GPS provider is enabled
@@ -187,48 +156,46 @@ public class LocationDataHelper implements LocationListener {
                     // If GPS is not enabled, prompt user to enable it
                     showLocationSettingsDialog();
                     Log.d(TAG, "GPS provider is not enabled");
-                    return false;
                 } else {
-                    // Record the start time
-                    startTime = System.currentTimeMillis();
-                    // Request location updates
+                    // Request location updates with a interval of 1 second (1000 milliseconds)
                     locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
                             1000, 0, this);
                     Log.d(TAG, "Location updates started");
-                    return true;
                 }
             } else {
-                // Request location permission
-                ActivityCompat.requestPermissions(activity,
+                // Request location permission if not granted
+                ActivityCompat.requestPermissions(mainActivity,
                         new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                         REQUEST_LOCATION_PERMISSION);
                 Log.d(TAG, "Location permission not granted");
-                return false;
             }
         } catch (SecurityException e) {
             // Handle permission denied exception
             Log.e(TAG, "Permission denied: " + e.getMessage());
-            return false;
         } catch (Exception e) {
             // Handle other exceptions
             Log.e(TAG, "Error starting location updates: " + e.getMessage());
-            return false;
         }
     }
 
+
     /**
      * Stops location updates.
+     * This method removes location updates from the location manager.
      *
      * @throws SecurityException If the caller does not have the required permission.
      */
     public void stopLocationUpdates() throws SecurityException {
         try {
+            // Remove location updates
             locationManager.removeUpdates(this);
+
+            // Log that location updates are stopped
             Log.d(TAG, "Location updates stopped");
         } catch (SecurityException e) {
-            // Log the exception
+            // Log the exception if security exception occurs
             Log.e(TAG, "Failed to stop location updates: " + e.getMessage());
-            // Rethrow the exception
+            // Rethrow the security exception
             throw e;
         } catch (Exception e) {
             // Log other exceptions
@@ -237,13 +204,14 @@ public class LocationDataHelper implements LocationListener {
     }
 
 
+
     /**
      * Shows a dialog to prompt the user to enable location settings.
      */
-    private static void showLocationSettingsDialog() {
+    private void showLocationSettingsDialog() {
         try {
             // Create a dialog builder instance
-            AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+            AlertDialog.Builder builder = new AlertDialog.Builder(mainActivity);
 
             // Set the message and button actions for the dialog
             builder.setMessage("GPS is disabled. Do you want to enable it?")
@@ -252,8 +220,8 @@ public class LocationDataHelper implements LocationListener {
                     .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
                             // Start the activity to open location settings
-                            activity.startActivity(new Intent
-                                    (Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+                            mainActivity.startActivity(
+                                    new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
                         }
                     })
                     // Negative button action to cancel the dialog
@@ -267,11 +235,57 @@ public class LocationDataHelper implements LocationListener {
             // Create and display the dialog
             AlertDialog alert = builder.create();
             alert.show();
+
+            // Log that the dialog is being shown
+            Log.d(TAG, "Location settings dialog is shown.");
+
         } catch (Exception e) {
             // Log any errors that occur during the creation or display of the dialog
             Log.e(TAG, "Error showing location settings dialog: " + e.getMessage());
         }
     }
+
+    /**
+     * Method to handle receiving new location updates from other parts of your code.
+     * Calculates the time to first fix for the new location update and processes the update.
+     *
+     * @param newLocation The new Location object representing the updated location.
+     * @param updateTime  The time when the location update was received.
+     */
+    public void handleNewLocationUpdate(Location newLocation, long updateTime) {
+        // Calculate the time to first fix for the new location update
+        long timeToFirstFix = updateTime - startTime;
+
+        // Increment the iteration count
+        iterCount += 1;
+
+        // Update the iteration count TextView
+        itercount.setText("IterCount:" + iterCount);
+
+        // Log the iteration count
+        Log.d(TAG, "Iteration Count:" + iterCount);
+
+        try {
+            // Process the location update
+            ttffTracker = new TTFFTracker(mainActivity);
+            ttffTracker.processLocationUpdate(newLocation, timeToFirstFix);
+        } catch (Exception e) {
+            // Handle any exceptions that might occur during the method call
+            Log.e(TAG, "Error processing location update: " + e.getMessage());
+        }
+
+        // Log information about location updates
+        Log.d(TAG, "Location updates delayed for 10 seconds");
+
+        // Stop location updates after 100 iterations
+        if (iterCount == 100) {
+            stopLocationUpdates();
+        }
+
+        // Update the start time for the next update
+        startTime = System.currentTimeMillis();
+    }
+
 
 }
 

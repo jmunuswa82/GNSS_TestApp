@@ -50,8 +50,8 @@
                 android:layout_margin="10dp"
                 android:background="#FF184C47"
                 android:checked="false"
-                android:textOn="Start TTFF"
-                android:textOff="Stop TTFF"
+                android:textOff="Start TTFF"
+                android:textOn="Stop TTFF"
                 android:textColor="@color/white" />
 
         </LinearLayout>
@@ -77,16 +77,6 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:text="Longitude: "
-                android:textColor="@color/black"
-                android:textSize="16sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/timeDelay"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="Time Delay:"
                 android:textColor="@color/black"
                 android:textSize="16sp"
                 android:textStyle="bold" />

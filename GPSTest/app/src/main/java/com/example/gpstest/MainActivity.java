@@ -16,6 +16,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
@@ -23,13 +24,13 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int REQUEST_LOCATION_PERMISSION = 1001;
     private LocationManager locationManager;
-    private long startTime;
-
 
     private ToggleButton startGPSButton,startTTFFButton;
     private Button clearGPSButton;
-    private TextView latTextview, longTextview, ttffTextview,
-            iterCount, timeDelay;
+    TextView latTextview;
+    private TextView longTextview;
+    TextView ttffTextview;
+    private TextView iterCount;
     private TextView altTextview, ehvTextview,
             altMslTextview, satsTextview,
             speedTextview, bearingTextview, sAccTextview,
@@ -39,9 +40,10 @@ public class MainActivity extends AppCompatActivity {
     private GnssStatus gnssStatus;
     private TableLayout satelliteTable;
 
-    private static final String TAG = "GPS_TTFF";
-    private static final int NUM_FIXES = 100;
-    private LocationDataHelper locationDataHelper;
+    private static final String TAG = "MainActivity";
+    LocationDataHelper locationDataHelper;
+    TTFFTracker ttffTracker;
+
 
     /**
      * Called when the activity is created.
@@ -52,8 +54,16 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-       locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-
+        try {
+            // Pass satelliteTable to LocationDataHelper constructor
+            locationDataHelper = new LocationDataHelper(this);
+        } catch (Exception e) {
+            // Handle exception gracefully
+            Log.e(TAG, "Error initializing " +
+                    "LocationDataHelper: " + e.getMessage());
+            e.printStackTrace();
+        }
+        ttffTracker = new TTFFTracker(this);
 
         //In First layout
         clearGPSButton = findViewById(R.id.clearGPSButton);
@@ -62,7 +72,6 @@ public class MainActivity extends AppCompatActivity {
         latTextview = findViewById(R.id.latTextview);
         longTextview = findViewById(R.id.longTextview);
         ttffTextview = findViewById(R.id.ttffTextview);
-        timeDelay = findViewById(R.id.timeDelay);
         iterCount = findViewById(R.id.iterCount);
 
 
@@ -80,26 +89,15 @@ public class MainActivity extends AppCompatActivity {
 
         // Get references to satelliteTable
         satelliteTable = findViewById(R.id.satelliteTable);
-        try {
-            // Pass satelliteTable to LocationDataHelper constructor
-            locationDataHelper = new LocationDataHelper(this,
-                    latTextview, longTextview);
-        } catch (Exception e) {
-            // Handle exception gracefully
-            Log.e(TAG, "Error initializing " +
-                    "LocationDataHelper: " + e.getMessage());
-            e.printStackTrace();
-        }
 
+        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
         startGPSButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (startGPSButton.isChecked()) {
                     // Start location updates
-                    boolean started = locationDataHelper.startLocationUpdates();
-                    if (started) {
-                        // Location updates started successfully
+                     locationDataHelper.startLocationUpdates();
                         // Now, check if permission is granted
                         if (checkLocationPermission()) {
                             // Permission granted, attempt to get last known location
@@ -107,11 +105,6 @@ public class MainActivity extends AppCompatActivity {
                                 Location lastKnownLocation = locationManager.
                                         getLastKnownLocation(LocationManager.GPS_PROVIDER);
                                 if (lastKnownLocation != null) {
-                                    // Last known location available, update UI
-                                    double latitude = lastKnownLocation.getLatitude();
-                                    double longitude = lastKnownLocation.getLongitude();
-                                    latTextview.setText("Latitude: " + latitude);
-                                    longTextview.setText("Longitude: " + longitude);
                                     // Update satellite details
                                     updateSatelliteDetails();
                                 }
@@ -127,7 +120,7 @@ public class MainActivity extends AppCompatActivity {
                                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                                     REQUEST_LOCATION_PERMISSION);
                         }
-                    }
+
                 } else {
                     // Stop location updates
                     locationDataHelper.stopLocationUpdates();
@@ -199,7 +192,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 // Define an array containing all TextViews that display GPS data
                 TextView[] textViewArray = {latTextview, longTextview,
-                        ttffTextview, iterCount, timeDelay, altTextview, ehvTextview,
+                        ttffTextview, iterCount, altTextview, ehvTextview,
                         altMslTextview, satsTextview, speedTextview, bearingTextview,
                         sAccTextview, bAccTextview, pDopTextview, hvDopTextview};
 
@@ -250,14 +243,14 @@ public class MainActivity extends AppCompatActivity {
      */
     @Override
     public void onRequestPermissionsResult(int requestCode,
-                                           String[] permissions, int[] grantResults) {
+                                           @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode,
                 permissions, grantResults);
         if (requestCode == REQUEST_LOCATION_PERMISSION) {
             if (grantResults.length > 0
                     && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 Log.d("Location","Allow location permissions");
-
                locationDataHelper.startLocationUpdates();
             } else {
                 Toast.makeText(this,
